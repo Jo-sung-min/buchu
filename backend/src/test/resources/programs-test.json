@@ -1,0 +1,26 @@
+{
+  "updatedAt": "2026-10-14",
+  "programs": [
+    {
+      "slug": "alpha-program", "name": "Alpha", "tagline": "콘텐츠 소개", "description": "이메일 콘텐츠 프로그램",
+      "category": "affiliate", "channels": ["website"], "cost": "free", "costLabel": "무료 가입",
+      "commission": "공식 조건 확인", "settlement": "공식 조건 확인", "difficulty": "beginner", "featured": false,
+      "officialUrl": "https://example.com/alpha", "guideUrl": "https://example.com/alpha/guide", "brandColor": "#123456", "initials": "A",
+      "tags": ["newsletter"], "highlights": ["콘텐츠 활용"], "steps": ["공식 사이트에서 가입"], "cautions": ["수익은 보장되지 않습니다."], "verifiedAt": "2026-10-14"
+    },
+    {
+      "slug": "featured-program", "name": "쿠팡 테스트", "tagline": "쇼핑 링크 소개", "description": "블로그에서 쇼핑 링크를 소개하는 테스트 프로그램",
+      "category": "affiliate", "channels": ["blog", "sns"], "cost": "free", "costLabel": "무료 가입",
+      "commission": "공식 조건 확인", "settlement": "공식 조건 확인", "difficulty": "beginner", "featured": true,
+      "officialUrl": "https://example.com/featured", "guideUrl": "https://example.com/featured/guide", "brandColor": "#123456", "initials": "C",
+      "tags": ["쇼핑"], "highlights": ["링크 공유"], "steps": ["공식 사이트에서 가입"], "cautions": ["수익은 보장되지 않습니다."], "verifiedAt": "2026-10-14"
+    },
+    {
+      "slug": "campaign-program", "name": "리뷰 캠페인", "tagline": "쇼핑 체험 소개", "description": "쇼핑 캠페인을 소개하는 테스트 프로그램",
+      "category": "campaign", "channels": ["blog", "video"], "cost": "check", "costLabel": "캠페인별 확인",
+      "commission": "캠페인별 확인", "settlement": "캠페인별 확인", "difficulty": "intermediate", "featured": false,
+      "officialUrl": "https://example.com/campaign", "guideUrl": "https://example.com/campaign/guide", "brandColor": "#123456", "initials": "R",
+      "tags": ["리뷰"], "highlights": ["체험 콘텐츠"], "steps": ["공식 사이트에서 가입"], "cautions": ["수익은 보장되지 않습니다."], "verifiedAt": "2026-10-14"
+    }
+  ]
+}

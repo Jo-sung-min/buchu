@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: buchu-api
+
+server:
+  port: ${PORT:8081}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+buchu:
+  catalog-resource: classpath:programs.json
