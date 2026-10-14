@@ -15,7 +15,7 @@ export function Catalog({ programs, savedOnly = false }: { programs: Program[]; 
   const items = useMemo(() => programs.filter(program => {
     const matchesQuery = [program.name, program.tagline, program.description, ...program.tags].join(" ").toLocaleLowerCase("ko").includes(query.trim().toLocaleLowerCase("ko"));
     return matchesQuery && (channel === "all" || program.channels.includes(channel)) && (!freeOnly || program.cost === "free") && (!savedOnly || saved.includes(program.slug));
-  }).sort((a, b) => sort === "name" ? a.name.localeCompare(b.name, "ko") : Number(b.featured) - Number(a.featured)), [programs, query, channel, freeOnly, savedOnly, saved, sort]);
+  }).sort((a, b) => sort === "name" ? a.name.localeCompare(b.name, "ko") : Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name, "ko")), [programs, query, channel, freeOnly, savedOnly, saved, sort]);
   function reset() { setQuery(""); setChannel("all"); setFreeOnly(false); setSort("recommended"); }
   const filtered = !!query || channel !== "all" || freeOnly;
   return <section className={`catalog container ${savedOnly ? "saved-catalog" : ""}`} id="discover"><div className="section-heading"><div><div className="section-kicker">{savedOnly ? "MY COLLECTION" : "FIND YOUR SIDE HUSTLE"}</div><h2>{savedOnly ? "마음에 담아둔 부업" : "누구나, 모두가 마케터"}<span className="heading-dot">.</span></h2><p>{savedOnly ? "관심 있는 부업을 모아두고, 내 속도로 시작해 보세요." : "나에게 익숙한 채널에서, 부담 없이 첫걸음을 시작해 보세요."}</p></div>{!savedOnly && <span className="curated-label"><Icon name="check" size={15} />공식 서비스 정보 기반</span>}</div>

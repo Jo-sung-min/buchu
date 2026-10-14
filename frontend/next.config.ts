@@ -2,9 +2,10 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   turbopack: { root: path.resolve(__dirname, "..") },
   async rewrites() {
-    const backend = (process.env.BACKEND_URL || "http://localhost:8081").replace(/\/$/, "");
+    const backend = (process.env.BACKEND_URL || "http://localhost:8082").replace(/\/$/, "");
     return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
   },
 };

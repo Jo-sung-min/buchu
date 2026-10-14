@@ -2,7 +2,7 @@
 
 나에게 맞는 부업을 찾는 정보성 사이트입니다. 첫 번째 카테고리 **모두가 마케터**에서는 쿠팡 파트너스처럼 상품이나 서비스를 소개하고, 전용 링크를 통해 수익 활동에 참여할 수 있는 프로그램을 모아 보여줍니다.
 
-이 저장소는 프론트엔드와 백엔드를 함께 관리하는 모노레포입니다. 같은 상위 폴더의 `fatell` 프로젝트에서 사용하는 Next.js와 Spring Boot 버전에 맞춰 구성했습니다.
+이 저장소는 프론트엔드와 백엔드를 함께 관리하는 모노레포입니다. 같은 상위 폴더의 `fatell` 프로젝트에서 확인한 Next.js `^16.2.12`, React `19.1.0`, Spring Boot `3.5.16`을 기준으로 구성했습니다. Next.js는 같은 16 버전 계열의 `16.4.0`을 적용해 기존 버전의 알려진 보안 문제를 해결했습니다. [Next.js 공식 보안 안내](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36)와 [16.4.0 공식 릴리스](https://github.com/vercel/next.js/releases/tag/v16.4.0)를 참고했습니다.
 
 ## 구성
 
@@ -19,13 +19,13 @@ buchu/
 
 | 항목 | 버전 / 기본 주소 |
 | --- | --- |
-| Next.js | 16.2.12 |
+| Next.js | 16.4.0 |
 | React | 19.1.0 |
 | Spring Boot | 3.5.16 |
 | Java | 21 |
 | Gradle Wrapper | 8.14.3 |
 | 프론트엔드 | `http://localhost:3000` |
-| 백엔드 | `http://localhost:8081` |
+| 백엔드 | `http://localhost:8082` |
 
 ## 시작하기
 
@@ -53,10 +53,10 @@ npm run dev
 
 ## 환경 설정
 
-프론트엔드의 `BACKEND_URL` 기본값은 `http://localhost:8081`입니다. 다른 주소를 사용하려면 `frontend/.env.local`에 설정한 뒤 프론트엔드를 다시 실행합니다.
+프론트엔드의 `BACKEND_URL` 기본값은 `http://localhost:8082`입니다. 다른 주소를 사용하려면 `frontend/.env.local`에 설정한 뒤 프론트엔드를 다시 실행합니다.
 
 ```dotenv
-BACKEND_URL=http://localhost:8081
+BACKEND_URL=http://localhost:8082
 ```
 
 `BACKEND_URL`은 서버에서 사용하는 설정이며 브라우저에 공개되는 환경 변수는 아닙니다. 프론트엔드의 `/api/*` 요청은 이 주소의 백엔드로 연결됩니다.
@@ -73,6 +73,16 @@ BACKEND_URL=http://localhost:8081
 프로그램 소개는 공식 출처를 바탕으로 정리합니다. 수수료, 참여 자격, 정산 조건은 프로그램 운영사 정책에 따라 바뀔 수 있으므로 참여 전 각 공식 페이지의 최신 조건을 확인해야 합니다. 수익을 보장하거나 제휴사 가입을 대행하는 서비스는 아닙니다.
 
 ## 개발 명령
+
+백엔드의 공개 API는 다음과 같습니다. 프론트엔드 주소의 `/api`로도 동일하게 호출할 수 있습니다.
+
+| 경로 | 기능 |
+| --- | --- |
+| `GET /api/health` | 서비스 상태 확인 |
+| `GET /api/programs` | 목록 조회. `q`, `channel`, `cost`, `sort` 필터 지원 |
+| `GET /api/programs/{slug}` | 프로그램 상세 조회 |
+
+`channel`은 `all`, `blog`, `sns`, `video`, `website`, `cost`는 `all`, `free`, `sort`는 `recommended`, `name`을 사용합니다. 잘못된 조건은 400, 없는 프로그램은 404 응답을 반환합니다.
 
 모든 명령은 저장소 루트에서 실행합니다.
 

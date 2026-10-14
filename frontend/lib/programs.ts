@@ -4,7 +4,7 @@ import type { Program } from "./types";
 
 export async function getPrograms(): Promise<{ items: Program[]; total: number; updatedAt: string }> {
   try {
-    const backend = (process.env.BACKEND_URL || "http://localhost:8081").replace(/\/$/, "");
+    const backend = (process.env.BACKEND_URL || "http://localhost:8082").replace(/\/$/, "");
     const response = await fetch(`${backend}/api/programs`, {
       cache: "no-store", signal: AbortSignal.timeout(1500),
     });
