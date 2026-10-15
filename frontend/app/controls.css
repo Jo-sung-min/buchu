@@ -187,3 +187,11 @@
   .submission-page .submission-save-actions .button,
   .admin-review-delete-confirm .button { transition: none; }
 }
+
+/* Header actions keep their footprint when the page label or saved count changes. */
+.community-write { width: 100px; flex-shrink: 0; padding-inline: 12px; }
+.community-header-actions .community-saved { position: relative; width: 20px; height: 24px; flex-shrink: 0; justify-content: center; }
+.community-header-actions .community-saved b { position: absolute; top: -5px; left: 13px; min-width: 15px; padding: 0 3px; line-height: 15px; border-radius: 999px; background: var(--page); font-size: 9px; text-align: center; }
+.community-filters button, .community-filters button.active { font-weight: 650; }
+.community-view-tabs button, .community-view-tabs button.active { font-weight: 650; }
+@media (max-width: 520px) { .community-write { width: 84px; } }
