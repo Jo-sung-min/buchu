@@ -1,5 +1,12 @@
 export type Channel = "blog" | "sns" | "video" | "website";
 export interface Program {
+  board?: "MARKETER" | "HELP";
+  helpType?: "PROMOTION" | "RECRUITMENT" | null;
+  location?: string;
+  deadline?: string;
+  companyName?: string | null;
+  thumbnailUrl?: string | null;
+  content?: import("./submissions").RichDocument | null;
   slug: string;
   name: string;
   tagline: string;

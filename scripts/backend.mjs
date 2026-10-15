@@ -11,6 +11,8 @@ if (!allowedTasks.has(task)) {
 }
 
 const backendDirectory = fileURLToPath(new URL("../backend/", import.meta.url));
+const environmentFile = fileURLToPath(new URL("../backend/.env", import.meta.url));
+if (existsSync(environmentFile)) process.loadEnvFile(environmentFile);
 const isWindows = process.platform === "win32";
 const wrapperPath = fileURLToPath(
   new URL(isWindows ? "../backend/gradlew.bat" : "../backend/gradlew", import.meta.url),

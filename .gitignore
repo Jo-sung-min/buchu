@@ -27,3 +27,6 @@ playwright-report/
 test-results/
 .playwright-mcp/
 .artifacts/
+.local/
+backend/uploads/
+backend/bin/

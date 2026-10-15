@@ -1,0 +1,189 @@
+/* A shared control shape for both appearance modes. Keep navigation tabs flat. */
+:root {
+  --control-radius: 12px;
+  --control-radius-small: 10px;
+  --control-radius-compact: 8px;
+}
+
+.button,
+.community-write,
+.community-primary,
+.community-empty > a,
+.community-empty > button,
+.review-button,
+.submission-page .submission-save-actions .button,
+.admin-review-delete-confirm .button {
+  border-radius: var(--control-radius);
+  gap: 10px;
+  font-weight: 600;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.button { min-height: 44px; }
+.community-write {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  line-height: 1.4;
+}
+.community-primary { min-height: 44px; }
+.community-empty > a,
+.community-empty > button { min-height: 40px; }
+.review-button { min-height: 42px; }
+.review-empty .review-button,
+.review-delete-panel .review-button,
+.review-recovery-row .review-button,
+.review-index-heading .review-button,
+.review-section-heading .review-button,
+.admin-review-delete-confirm .button { min-height: 38px; }
+.submission-save-actions .button { gap: 9px; }
+.submission-page .submission-save-actions .button { min-height: 44px; }
+.submission-upload-button,
+.submission-inline-input .button,
+.submission-status-actions .button { min-height: 40px; }
+.summary-card .button,
+.admin-review-actions .button { gap: 10px; }
+
+/* Icon actions have their own compact hit area instead of text-button padding. */
+.community-settings,
+.save-button,
+.community-row > .save-button,
+.community-header-search button,
+.community-search button,
+.search-field button,
+.admin-detail-toolbar button,
+.admin-feedback > button[aria-label] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--control-radius-small);
+}
+.community-settings { width: 36px; height: 36px; }
+.save-button,
+.community-row > .save-button {
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  margin-right: 0;
+}
+.community-row > .save-button.is-saved { background: var(--surface-soft); }
+.community-header-search button,
+.community-search button,
+.search-field button { width: 28px; height: 28px; padding: 5px; border-radius: 50%; }
+.admin-detail-toolbar button,
+.admin-feedback > button[aria-label] { width: 32px; height: 32px; padding: 6px; }
+.community-settings:hover,
+.save-button:not(:disabled):hover,
+.community-row > .save-button:not(:disabled):hover,
+.community-header-search button:hover,
+.community-search button:hover,
+.admin-detail-toolbar button:hover,
+.admin-feedback > button[aria-label]:hover {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+
+/* Topic and status filters are pills; page and board navigation stays underlined. */
+.community-filters button,
+.filter-chips button,
+.admin-status-tabs button,
+.submission-page .submission-channel-options label {
+  border-radius: 999px;
+  min-height: 34px;
+}
+.community-filters button { padding: 8px 14px; }
+.community-filters button.active,
+.admin-status-tabs button.active {
+  background: var(--surface-selected);
+  color: var(--ink);
+}
+.submission-page .submission-channel-options label { padding: 10px 14px; }
+.submission-page .submission-channel-options label:hover { border-color: var(--line-strong); }
+.submission-board-options label,
+.theme-option { border-radius: 14px; }
+.theme-preview { border-radius: var(--control-radius-compact); }
+.submission-board-options label:hover { border-color: var(--line-strong); }
+.submission-board-options label:has(input:focus-visible),
+.submission-channel-options label:has(input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* Secondary actions use the same shape without competing with the primary CTA. */
+.admin-account button,
+.admin-pagination button,
+.review-pagination button,
+.admin-search button,
+.admin-refresh,
+.editor-template,
+.editor-link-panel button,
+.submission-page .submission-text-button,
+.submission-page .submission-new button,
+.review-delete-trigger,
+.admin-review-delete {
+  border-radius: var(--control-radius-small);
+  line-height: 1.5;
+}
+.admin-account button,
+.admin-pagination button,
+.review-pagination button { min-height: 36px; padding: 8px 13px; }
+.admin-search button { min-height: 30px; padding: 6px 10px; background: var(--surface); }
+.admin-refresh { min-height: 32px; padding: 7px 10px; text-decoration: none; white-space: nowrap; }
+.admin-account button:not(:disabled):hover,
+.admin-pagination button:not(:disabled):hover,
+.review-pagination button:not(:disabled):hover,
+.admin-search button:not(:disabled):hover,
+.admin-refresh:not(:disabled):hover,
+.submission-page .submission-text-button:not(:disabled):hover,
+.submission-page .submission-new button:not(:disabled):hover {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+.submission-page .submission-text-button,
+.submission-page .submission-new button { min-height: 36px; padding: 7px 9px; }
+.review-delete-trigger,
+.admin-review-delete { min-height: 32px; padding: 7px 10px; text-decoration: none; }
+.review-delete-trigger:not(:disabled):hover,
+.admin-review-delete:not(:disabled):hover { color: var(--danger); background: var(--danger-bg); text-decoration: none; }
+
+/* Editor controls remain compact, including their existing selected states. */
+.editor-topline { flex-wrap: wrap; gap: 8px; }
+.editor-view-tabs { border-radius: var(--control-radius-small); }
+.editor-view-tabs button,
+.editor-tool,
+.editor-color-tool,
+.editor-heading-select select { border-radius: var(--control-radius-compact); }
+.editor-template { min-height: 34px; padding: 7px 10px; border: 1px solid var(--line); background: var(--surface); }
+.editor-template:not(:disabled):hover { background: var(--surface-hover); border-color: var(--line-strong); }
+.editor-link-panel button { min-height: 32px; }
+.editor-link-panel button:not(:disabled):hover { background: var(--surface-hover); }
+.editor-color-tool:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+
+@media (max-width: 520px) {
+  .community-write { min-height: 34px; padding: 8px 13px; border-radius: var(--control-radius-small); }
+  .community-settings { width: 32px; height: 32px; }
+  .community-row > .save-button { width: 30px; height: 32px; padding: 6px; }
+  .community-filters button { min-height: 32px; padding: 7px 11px; }
+  .submission-page .submission-channel-options label { padding: 9px 12px; }
+  .submission-page .submission-workspace-heading .submission-text-button {
+    max-width: none;
+    white-space: nowrap;
+    padding-inline: 7px;
+    font-size: 11px;
+  }
+  .editor-template { padding: 7px 8px; }
+  .admin-account button { padding: 6px 9px; min-height: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .community-write,
+  .community-primary,
+  .community-empty > a,
+  .community-empty > button,
+  .review-button,
+  .submission-page .submission-save-actions .button,
+  .admin-review-delete-confirm .button { transition: none; }
+}

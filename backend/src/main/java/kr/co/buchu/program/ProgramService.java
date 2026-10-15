@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
+import kr.co.buchu.submission.SubmissionService;
 
 @Service
 public class ProgramService {
@@ -21,9 +22,12 @@ public class ProgramService {
     private static final Set<String> COSTS = Set.of("all", "free");
     private static final Set<String> SORTS = Set.of("recommended", "name");
     private final ProgramCatalog catalog;
+    private final SubmissionService submissions;
 
     public ProgramService(ObjectMapper mapper,
-                          @Value("${buchu.catalog-resource}") Resource resource) throws IOException {
+                          @Value("${buchu.catalog-resource}") Resource resource,
+                          SubmissionService submissions) throws IOException {
+        this.submissions = submissions;
         try (var input = resource.getInputStream()) {
             var loaded = mapper.readValue(input, ProgramCatalog.class);
             if (loaded.updatedAt() == null || loaded.programs() == null) {
@@ -55,7 +59,7 @@ public class ProgramService {
         Comparator<Program> ordering = "name".equals(selectedSort)
                 ? byName
                 : Comparator.comparing(Program::featured).reversed().thenComparing(byName);
-        var items = catalog.programs().stream()
+        var items = allPrograms()
                 .filter(program -> query.isEmpty() || matches(program, query))
                 .filter(program -> "all".equals(selectedChannel) || program.channels().contains(selectedChannel))
                 .filter(program -> "all".equals(selectedCost) || selectedCost.equals(program.cost()))
@@ -65,10 +69,14 @@ public class ProgramService {
     }
 
     public Program findBySlug(String slug) {
-        return catalog.programs().stream()
+        return allPrograms()
                 .filter(program -> program.slug().equals(slug))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "프로그램을 찾을 수 없습니다."));
+    }
+
+    private Stream<Program> allPrograms() {
+        return Stream.concat(catalog.programs().stream(), submissions.approvedPrograms().stream());
     }
 
     private static boolean matches(Program program, String query) {

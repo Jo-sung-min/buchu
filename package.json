@@ -7,7 +7,7 @@
     "frontend"
   ],
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=20.12.0"
   },
   "scripts": {
     "dev": "npm run dev --workspace=frontend",
@@ -15,6 +15,9 @@
     "typecheck": "npm run typecheck --workspace=frontend",
     "lint": "npm run lint --workspace=frontend",
     "dev:backend": "node scripts/backend.mjs bootRun",
-    "test:backend": "node scripts/backend.mjs test"
+    "test:backend": "node scripts/backend.mjs test",
+    "db:start": "node scripts/local-db.mjs start",
+    "db:stop": "node scripts/local-db.mjs stop",
+    "db:status": "node scripts/local-db.mjs status"
   }
 }

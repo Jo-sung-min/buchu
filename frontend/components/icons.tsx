@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 
-export type IconName = "arrow" | "arrow-up" | "search" | "bookmark" | "check" | "link" | "spark" | "chevron" | "close" | "book" | "globe" | "leaf" | "info" | "sliders" | "heart";
+export type IconName = "arrow" | "arrow-up" | "search" | "bookmark" | "check" | "link" | "spark" | "chevron" | "close" | "book" | "globe" | "leaf" | "info" | "sliders" | "heart" | "settings" | "sun" | "moon";
 export function Icon({ name, size = 20, className = "", style }: { name: IconName; size?: number; className?: string; style?: CSSProperties }) {
   const paths: Record<IconName, React.ReactNode> = {
     arrow: <><path d="M4 12h15M13 5l7 7-7 7" /></>,
@@ -18,6 +18,9 @@ export function Icon({ name, size = 20, className = "", style }: { name: IconNam
     info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></>,
     sliders: <><path d="M4 7h5m4 0h7M4 17h9m4 0h3" /><circle cx="11" cy="7" r="2" /><circle cx="15" cy="17" r="2" /></>,
     heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />,
+    settings: <><path d="m9.5 3-.6 2.3-2 .9L4.7 5.5 2.2 9.8 4 11.4v2.2l-1.8 1.6 2.5 4.3 2.2-.7 2 .9.6 2.3h5l.6-2.3 2-.9 2.2.7 2.5-4.3-1.8-1.6v-2.2l1.8-1.6-2.5-4.3-2.2.7-2-.9-.6-2.3z" transform="translate(0 -.5)" /><circle cx="12" cy="12" r="3" /></>,
+    sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>,
+    moon: <path d="M20.5 13.4A8.5 8.5 0 0 1 10.6 3.5a8.5 8.5 0 1 0 9.9 9.9Z" />,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className} style={style}>{paths[name]}</svg>;
 }

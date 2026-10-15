@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = "buchu.catalog-resource=classpath:programs-test.json")
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class ProgramApiTest {
     @Autowired
     private MockMvc mvc;
@@ -24,6 +26,7 @@ class ProgramApiTest {
                 .andExpect(jsonPath("$.total").value(3))
                 .andExpect(jsonPath("$.items", hasSize(3)))
                 .andExpect(jsonPath("$.items[0].slug").value("featured-program"))
+                .andExpect(jsonPath("$.items[0].board").value("MARKETER"))
                 .andExpect(jsonPath("$.updatedAt").value("2026-10-14"));
     }
 
