@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/submissions";
 import { adStatusLabels, krw, adMonthlyPrice, type AdStatus, type Advertisement, type AdminAdPage } from "@/lib/ads";
 import { Icon } from "./icons";
+import { AdTile } from "./ads/ad-tile";
 
 const pageSize = 20;
 function date(value?: string | null) { if (!value) return "—"; const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? "—" : new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(parsed); }
@@ -61,11 +62,12 @@ export function AdminAds({ onSessionExpired }: { onSessionExpired: () => void })
       <div className="admin-result-count" role="status">{loading ? "광고 신청을 불러오고 있어요…" : `총 ${list?.total ?? 0}건`}</div>
       {!loading && list && list.items.length === 0 ? <div className="admin-empty"><Icon name="info" size={32} /><h2>해당하는 광고 신청이 없어요</h2><p>양옆 스폰서 자리의 + 타일로 신청이 들어오면 여기에 표시됩니다.</p></div>
         : <ul className="admin-ad-list">{list?.items.map(ad => <li key={ad.id} className="admin-ad-row">
-          <span className="ad-tile admin-ad-tile" style={{ "--tile-color": ad.color } as React.CSSProperties}><span><span className="ad-tile-mark" aria-hidden="true">{ad.siteName.slice(0, 2)}</span><strong>{ad.siteName}</strong><p>{ad.tagline}</p></span></span>
+          <AdTile ad={ad} className="admin-ad-tile" />
           <div className="admin-ad-info">
             <div><span className={`review-badge review-${ad.status === "APPROVED" ? "approved" : ad.status === "REJECTED" ? "rejected" : "pending"}`}>{adStatusLabels[ad.status]}</span><time>{date(ad.createdAt)} 신청</time></div>
             <a href={ad.url} target="_blank" rel="noopener noreferrer">{ad.url} ↗</a>
             <p>{ad.contactEmail}{ad.startsAt && <> · 게재 {date(ad.startsAt)} ~ {date(ad.endsAt)}</>}</p>
+            {(ad.imageUrl || ad.iconUrl) && <p className="admin-ad-note">{ad.imageUrl && <>배경 <a href={ad.imageUrl} target="_blank" rel="noopener noreferrer">{ad.imageUrl}</a> </>}{ad.iconUrl && <>파비콘 <a href={ad.iconUrl} target="_blank" rel="noopener noreferrer">{ad.iconUrl}</a></>}</p>}
             {ad.note && <p className="admin-ad-note">메모: {ad.note}</p>}
             {intent?.id === ad.id ? <form className="admin-ad-decision" onSubmit={event => { event.preventDefault(); void decide(); }}>
               {intent.action === "approve" && <label>게재 기간 <select value={months} onChange={event => setMonths(Number(event.target.value))} disabled={busy}>{Array.from({ length: 12 }, (_, index) => index + 1).map(value => <option key={value} value={value}>{value}개월 · {krw(adMonthlyPrice * value)}</option>)}</select></label>}

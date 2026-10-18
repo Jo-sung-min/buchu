@@ -19,13 +19,14 @@ import java.util.UUID;
 /** Side-rail sponsor tiles. Anyone can apply; the administrator approves after payment and the tile runs for N months. */
 @Service
 public class AdvertisementService {
-    public static final int TOTAL_SLOTS = 10;
+    public static final int TOTAL_SLOTS = 20;
     public static final long MONTHLY_PRICE_KRW = 300_000;
     private static final Set<String> STATUSES = Set.of("PENDING", "APPROVED", "REJECTED", "ENDED");
-    private static final String COLUMNS = "id, site_name, tagline, url, contact_email, color, status, note, created_at, starts_at, ends_at";
+    private static final String COLUMNS = "id, site_name, tagline, url, contact_email, color, status, note, created_at, starts_at, ends_at, image_url, icon_url";
     private final JdbcTemplate jdbc;
     private final RowMapper<Advertisement> adminMapper = (rs, index) -> map(rs.getString("id"), rs.getString("site_name"), rs.getString("tagline"), rs.getString("url"),
-            rs.getString("contact_email"), rs.getString("color"), rs.getString("status"), rs.getString("note"), rs.getTimestamp("created_at"), rs.getTimestamp("starts_at"), rs.getTimestamp("ends_at"));
+            rs.getString("contact_email"), rs.getString("color"), rs.getString("status"), rs.getString("note"), rs.getTimestamp("created_at"), rs.getTimestamp("starts_at"), rs.getTimestamp("ends_at"),
+            rs.getString("image_url"), rs.getString("icon_url"));
 
     public AdvertisementService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
@@ -40,18 +41,28 @@ public class AdvertisementService {
         if (!email.matches("[^\\s<>@]+@[^\\s<>@]+\\.[^\\s<>@]+")) throw invalid("담당자 이메일 형식을 확인해 주세요.");
         String color = input.color() == null || input.color().isBlank() ? "#25262B" : input.color().strip().toUpperCase();
         if (!color.matches("#[0-9A-F]{6}")) throw invalid("타일 색상은 #RRGGBB 형식으로 선택해 주세요.");
+        String imageUrl = imageUrl(input.imageUrl(), "배경 이미지 주소");
+        String iconUrl = imageUrl(input.iconUrl(), "파비콘 주소");
         String id = UUID.randomUUID().toString();
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        jdbc.update("INSERT INTO advertisements (id, site_name, tagline, url, contact_email, color, status, note, created_at) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', '', ?)",
-                id, siteName, tagline, url, email, color, now);
-        return new Advertisement(id, siteName, tagline, url, email, color, "PENDING", "", now.toInstant().toString(), null, null);
+        jdbc.update("INSERT INTO advertisements (id, site_name, tagline, url, contact_email, color, status, note, created_at, image_url, icon_url) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', '', ?, ?, ?)",
+                id, siteName, tagline, url, email, color, now, imageUrl, iconUrl);
+        return new Advertisement(id, siteName, tagline, url, email, color, "PENDING", "", now.toInstant().toString(), null, null, imageUrl, iconUrl);
+    }
+
+    /** Card images are plain https links (the applicant's own hosting); blank means "use the colour only". */
+    private static String imageUrl(String raw, String field) {
+        String value = raw == null ? "" : raw.strip();
+        if (value.isEmpty()) return "";
+        if (value.length() > 2000 || !ContentPolicy.safeUrl(value, false) || !value.toLowerCase().startsWith("https://")) throw invalid(field + "는 https 주소로 입력해 주세요.");
+        return value;
     }
 
     /** Public: running tiles only, oldest first so a sponsor keeps its place, and never the contact address. */
     @Transactional(readOnly = true)
     public Board board() {
         List<PublicAdvertisement> items = jdbc.query("SELECT " + COLUMNS + " FROM advertisements WHERE status = 'APPROVED' AND (ends_at IS NULL OR ends_at > ?) ORDER BY starts_at, id LIMIT ?",
-                (rs, index) -> new PublicAdvertisement(rs.getString("id"), rs.getString("site_name"), rs.getString("tagline"), rs.getString("url"), rs.getString("color")),
+                (rs, index) -> new PublicAdvertisement(rs.getString("id"), rs.getString("site_name"), rs.getString("tagline"), rs.getString("url"), rs.getString("color"), rs.getString("image_url"), rs.getString("icon_url")),
                 Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()), TOTAL_SLOTS);
         return new Board(items, TOTAL_SLOTS, MONTHLY_PRICE_KRW);
     }
@@ -109,9 +120,9 @@ public class AdvertisementService {
         return rows.getFirst();
     }
 
-    private static Advertisement map(String id, String siteName, String tagline, String url, String email, String color, String status, String note, Timestamp created, Timestamp starts, Timestamp ends) {
+    private static Advertisement map(String id, String siteName, String tagline, String url, String email, String color, String status, String note, Timestamp created, Timestamp starts, Timestamp ends, String imageUrl, String iconUrl) {
         return new Advertisement(id, siteName, tagline, url, email, color, status, note, created.toInstant().toString(),
-                starts == null ? null : starts.toInstant().toString(), ends == null ? null : ends.toInstant().toString());
+                starts == null ? null : starts.toInstant().toString(), ends == null ? null : ends.toInstant().toString(), imageUrl, iconUrl);
     }
 
     private static String note(String raw) {
@@ -129,10 +140,10 @@ public class AdvertisementService {
 
     private static ResponseStatusException invalid(String message) { return new ResponseStatusException(HttpStatus.BAD_REQUEST, message); }
 
-    public record ApplyInput(String siteName, String tagline, String url, String contactEmail, String color) {}
+    public record ApplyInput(String siteName, String tagline, String url, String contactEmail, String color, String imageUrl, String iconUrl) {}
     public record DecisionInput(Integer months, String note) {}
-    public record PublicAdvertisement(String id, String siteName, String tagline, String url, String color) {}
+    public record PublicAdvertisement(String id, String siteName, String tagline, String url, String color, String imageUrl, String iconUrl) {}
     public record Board(List<PublicAdvertisement> items, int totalSlots, long monthlyPriceKrw) {}
-    public record Advertisement(String id, String siteName, String tagline, String url, String contactEmail, String color, String status, String note, String createdAt, String startsAt, String endsAt) {}
+    public record Advertisement(String id, String siteName, String tagline, String url, String contactEmail, String color, String status, String note, String createdAt, String startsAt, String endsAt, String imageUrl, String iconUrl) {}
     public record AdminPage(List<Advertisement> items, long total, int page, int size, long pending, long active, int totalSlots) {}
 }

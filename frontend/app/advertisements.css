@@ -16,30 +16,43 @@
 
 .ad-rail { width: 100%; }
 .ad-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ad-tiles > li { min-width: 0; }
 .ad-tile {
-  --tile-color: var(--ink);
-  display: block; border-radius: 14px; overflow: hidden; min-height: 112px;
-  background: color-mix(in srgb, var(--tile-color) 12%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--tile-color) 28%, var(--line));
-  transition: transform .15s, border-color .15s;
+  --tile-color: #25262B;
+  position: relative; display: block; border-radius: 16px; overflow: hidden; aspect-ratio: 4 / 5;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tile-color) 92%, #fff) 0%, color-mix(in srgb, var(--tile-color) 70%, #000) 100%);
+  border: 1px solid color-mix(in srgb, var(--tile-color) 40%, var(--line));
+  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--tile-color) 70%, transparent);
+  color: #fff; transition: transform .18s, box-shadow .18s;
 }
-.ad-tile > a, .ad-tile > div, .ad-tile > span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 100%; min-height: 112px; padding: 16px 12px; text-align: center; color: var(--ink); }
-.ad-tile:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--tile-color) 60%, var(--line)); }
-.ad-tile a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; border-radius: 14px; }
-.ad-tile-mark {
-  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; margin-bottom: 4px;
-  background: var(--tile-color); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: -.02em;
+.ad-tile.has-image { background-image: var(--tile-image); background-size: cover; background-position: center; }
+.ad-tile.has-image::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(0 0 0 / .12) 0%, rgb(0 0 0 / .18) 45%, rgb(0 0 0 / .72) 100%); }
+.ad-tile > a, .ad-tile > div { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; height: 100%; padding: 14px 12px 15px; text-align: center; color: inherit; }
+.ad-tile:hover { transform: translateY(-2px); box-shadow: 0 16px 28px -14px color-mix(in srgb, var(--tile-color) 85%, transparent); }
+.ad-tile a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; border-radius: 16px; }
+.ad-tile-icon {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: auto; margin-top: 6px;
+  border-radius: 12px; background: rgb(255 255 255 / .92); box-shadow: 0 4px 14px rgb(0 0 0 / .18); overflow: hidden;
 }
-.ad-tile strong { font-size: 12px; font-weight: 750; line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
-.ad-tile p { font-size: 10px; line-height: 1.55; color: var(--text-secondary); word-break: keep-all; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.ad-tile-open { background: var(--surface); border: 1px dashed var(--line-strong); }
-.ad-tile-open:hover { border-color: var(--ink); }
-.ad-tile-open strong { font-size: 11px; color: var(--text-secondary); }
-.ad-tile-open p { font-size: 12px; font-weight: 700; color: var(--ink); }
-.ad-tile-open small { font-size: 9px; color: var(--faint); }
-.ad-tile-plus { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--text-secondary); margin-bottom: 2px; }
+.ad-tile-icon img { position: relative; z-index: 1; width: 28px; height: 28px; object-fit: contain; }
+.ad-tile-initials { position: absolute; inset: 0; display: grid; place-items: center; color: var(--tile-color); font-size: 14px; font-weight: 800; letter-spacing: -.02em; }
+.ad-tile strong { font-size: 13px; font-weight: 800; line-height: 1.3; word-break: keep-all; overflow-wrap: anywhere; text-shadow: 0 1px 2px rgb(0 0 0 / .25); }
+.ad-tile p { font-size: 10px; line-height: 1.5; color: rgb(255 255 255 / .82); word-break: keep-all; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ad-flip { perspective: 900px; aspect-ratio: 4 / 5; }
+.ad-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.4, .2, .2, 1); }
+.ad-flip.is-flipped .ad-flip-inner { transform: rotateY(180deg); }
+.ad-flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.ad-flip-face .ad-tile { height: 100%; aspect-ratio: auto; }
+.ad-flip-back { transform: rotateY(180deg); }
+@media (prefers-reduced-motion: reduce) { .ad-flip-inner { transition: none; } }
+.ad-tile-open { aspect-ratio: auto; min-height: 118px; background: var(--surface); border: 1px dashed var(--line-strong); box-shadow: none; color: var(--text-secondary); }
+.ad-tile-open > a { justify-content: center; gap: 6px; padding: 16px 12px; }
+.ad-tile-open:hover { border-color: var(--ink); transform: none; box-shadow: none; }
+.ad-tile-open strong { font-size: 12px; color: var(--text-secondary); text-shadow: none; }
+.ad-tile-open small { font-size: 10px; color: var(--faint); }
+.ad-tile-plus { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--text-secondary); margin-bottom: 2px; }
 .ad-tile-open:hover .ad-tile-plus { background: var(--ink); color: var(--page); border-color: var(--ink); }
-.ad-tile-empty { min-height: 72px; background: transparent; border: 1px dashed var(--line); opacity: .7; }
+.ad-tile-empty { aspect-ratio: auto; min-height: 64px; background: transparent; border: 1px dashed var(--line); opacity: .6; box-shadow: none; }
 
 /* Apply page */
 .ad-apply-page .review-write-heading { margin-bottom: 20px; }
@@ -49,8 +62,13 @@
 .ad-pricing-price strong { font-size: 24px; font-weight: 800; letter-spacing: -.04em; }
 .ad-pricing-price small { font-size: 11px; color: var(--muted); }
 .ad-pricing ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.85; color: var(--text-secondary); word-break: keep-all; }
-.ad-apply-preview { width: 160px; }
+.ad-apply-layout { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 34px; align-items: start; }
+.ad-apply-preview { position: sticky; top: 100px; }
 .ad-apply-preview .ad-tile { pointer-events: none; }
+.ad-apply-preview > p { margin-top: 10px; font-size: 11px; color: var(--muted); line-height: 1.6; text-align: center; word-break: keep-all; }
+.ad-apply-fields { display: grid; gap: 25px; min-width: 0; }
+.ad-apply-fields label small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
+.ad-color-field > .review-character-count { display: block; margin-top: 10px; }
 .ad-color-field { border: 0; padding: 0; margin: 0; }
 .ad-color-field legend { font-size: 14px; font-weight: 650; color: var(--ink); margin-bottom: 10px; }
 .ad-color-field > div { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -61,7 +79,7 @@
 
 /* Admin */
 .admin-ad-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-.admin-ad-row { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 20px; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+.admin-ad-row { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 20px; padding: 20px 22px; border-bottom: 1px solid var(--line); }
 .admin-ad-tile { pointer-events: none; }
 .admin-ad-info { display: grid; gap: 6px; font-size: 12px; min-width: 0; }
 .admin-ad-info > div:first-child { display: flex; align-items: center; gap: 10px; }
@@ -85,10 +103,8 @@
     width: min(1468px, calc(100% - 48px)); margin-inline: auto;
   }
   .site-frame-with-ads > .site-content { grid-area: content; }
-  .site-frame-with-ads > .site-ad-rail {
-    display: block; position: sticky; top: 100px; margin-top: 34px; margin-bottom: 36px;
-    max-height: calc(100vh - 120px); overflow: hidden;
-  }
+  /* Rails scroll with the page like trustmrr's: five tall cards plus the "+" tile are taller than most viewports. */
+  .site-frame-with-ads > .site-ad-rail { display: block; margin-top: 34px; margin-bottom: 36px; }
   .site-ad-left { grid-area: left; }
   .site-ad-right { grid-area: right; }
   .site-frame-with-ads .site-content > :is(.community-layout, .detail-page, .saved-catalog, .review-index-page) { width: 100%; }
@@ -110,6 +126,8 @@
 }
 @media (max-width: 760px) {
   .ad-pricing { grid-template-columns: 1fr; gap: 14px; padding: 18px; }
+  .ad-apply-layout { grid-template-columns: 1fr; gap: 22px; }
+  .ad-apply-preview { position: static; width: 170px; margin: 0 auto; }
   .admin-ad-row { grid-template-columns: 1fr; }
   .admin-ad-tile { max-width: 160px; }
 }
