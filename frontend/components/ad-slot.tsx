@@ -2,7 +2,8 @@ import { getAdvertisement, type AdvertisementPosition } from "@/lib/advertisemen
 
 export function AdSlot({ position }: { position: AdvertisementPosition }) {
   const advertisement = getAdvertisement(position);
-  if (!advertisement.enabled) return null;
+  // Without an image the rail shows sponsor tiles instead of an empty "AD" box.
+  if (!advertisement.enabled || !advertisement.imageUrl) return null;
 
   const alt = advertisement.alt || (advertisement.advertiser ? `${advertisement.advertiser} 광고` : "광고 배너");
   const creative = advertisement.imageUrl ? (
