@@ -1,5 +1,8 @@
 package kr.co.buchu.community;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import kr.co.buchu.member.MemberService;
+import kr.co.buchu.security.ClientAddress;
 import kr.co.buchu.submission.SubmissionAccessService;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,7 +18,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,28 +30,29 @@ public class CommunityPostService {
     /** Display order of topics on the front page. */
     public static final List<String> CATEGORY_ORDER = List.of("FREE", "INCOME", "QUESTION", "TIP", "STOCK", "REALTY", "WORK", "LOVE", "HEALTH", "STORY");
     public static final Set<String> CATEGORIES = Set.copyOf(CATEGORY_ORDER);
-    private static final String POST_COLUMNS = "id, category, title, content, nickname, view_count, comment_count, created_at";
+    private static final String POST_COLUMNS = "id, category, title, content, nickname, view_count, comment_count, created_at, author_id, author_type, ip_hint";
     private final JdbcTemplate jdbc;
     private final SecureRandom random = new SecureRandom();
     private final RowMapper<Post> postMapper = (rs, index) -> new Post(rs.getString("id"), rs.getString("category"), rs.getString("title"),
-            rs.getString("content"), rs.getString("nickname"), rs.getInt("view_count"), rs.getInt("comment_count"), rs.getTimestamp("created_at").toInstant().toString());
+            rs.getString("content"), rs.getString("nickname"), rs.getInt("view_count"), rs.getInt("comment_count"), rs.getTimestamp("created_at").toInstant().toString(),
+            rs.getString("author_id"), rs.getString("author_type"), rs.getString("ip_hint"), false);
     private final RowMapper<Comment> commentMapper = (rs, index) -> new Comment(rs.getString("id"), rs.getString("post_id"), rs.getString("content"),
-            rs.getString("nickname"), rs.getTimestamp("created_at").toInstant().toString());
+            rs.getString("nickname"), rs.getTimestamp("created_at").toInstant().toString(), rs.getString("author_id"), rs.getString("author_type"), rs.getString("ip_hint"), false);
 
     public CommunityPostService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     @Transactional
-    public CreatedPost create(PostInput input) {
+    public CreatedPost create(PostInput input, Author author) {
         if (input == null || input.category() == null || !CATEGORIES.contains(input.category())) throw invalid("글 주제를 선택해 주세요.");
         String title = text(input.title(), 2, 100, "제목");
         String content = text(input.content(), 5, 5000, "내용");
-        String token = token();
+        // Members delete through their session; anonymous authors keep a one-time delete code like DC's post password.
+        String token = author.member() ? null : token();
         String id = UUID.randomUUID().toString();
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        String nickname = nickname();
-        jdbc.update("INSERT INTO community_posts (id, category, title, content, nickname, delete_token_hash, view_count, comment_count, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)",
-                id, input.category(), title, content, nickname, SubmissionAccessService.hash(token), now);
-        return new CreatedPost(new Post(id, input.category(), title, content, nickname, 0, 0, now.toInstant().toString()), token);
+        jdbc.update("INSERT INTO community_posts (id, category, title, content, nickname, delete_token_hash, view_count, comment_count, created_at, author_id, author_type, ip_hint) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
+                id, input.category(), title, content, author.nickname(), SubmissionAccessService.hash(token == null ? UUID.randomUUID().toString() : token), now, author.id(), author.type(), author.ipHint());
+        return new CreatedPost(new Post(id, input.category(), title, content, author.nickname(), 0, 0, now.toInstant().toString(), author.id(), author.type(), author.ipHint(), author.member()), token);
     }
 
     @Transactional(readOnly = true)
@@ -100,8 +103,8 @@ public class CommunityPostService {
     }
 
     @Transactional
-    public void deleteOwned(String id, String token) {
-        requireToken("community_posts", id, token);
+    public void deleteOwned(String id, String token, String viewerId) {
+        if (!ownedByMember("community_posts", id, viewerId)) requireToken("community_posts", id, token);
         jdbc.update("DELETE FROM community_posts WHERE id = ?", id);
     }
 
@@ -111,29 +114,33 @@ public class CommunityPostService {
     }
 
     @Transactional
-    public CreatedComment comment(String postId, CommentInput input) {
+    public CreatedComment comment(String postId, CommentInput input, Author author) {
         if (jdbc.queryForObject("SELECT COUNT(*) FROM community_posts WHERE id = ?", Integer.class, postId) == 0) throw notFound();
         String content = text(input == null ? null : input.content(), 1, 1000, "댓글");
-        String token = token();
+        String token = author.member() ? null : token();
         String id = UUID.randomUUID().toString();
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        String nickname = nickname();
-        jdbc.update("INSERT INTO community_comments (id, post_id, content, nickname, delete_token_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                id, postId, content, nickname, SubmissionAccessService.hash(token), now);
+        jdbc.update("INSERT INTO community_comments (id, post_id, content, nickname, delete_token_hash, created_at, author_id, author_type, ip_hint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                id, postId, content, author.nickname(), SubmissionAccessService.hash(token == null ? UUID.randomUUID().toString() : token), now, author.id(), author.type(), author.ipHint());
         jdbc.update("UPDATE community_posts SET comment_count = comment_count + 1 WHERE id = ?", postId);
-        return new CreatedComment(new Comment(id, postId, content, nickname, now.toInstant().toString()), token);
+        return new CreatedComment(new Comment(id, postId, content, author.nickname(), now.toInstant().toString(), author.id(), author.type(), author.ipHint(), author.member()), token);
     }
 
     @Transactional(readOnly = true)
     public List<Comment> comments(String postId) {
         if (jdbc.queryForObject("SELECT COUNT(*) FROM community_posts WHERE id = ?", Integer.class, postId) == 0) throw notFound();
-        return jdbc.query("SELECT id, post_id, content, nickname, created_at FROM community_comments WHERE post_id = ? ORDER BY created_at, id LIMIT 500", commentMapper, postId);
+        return jdbc.query("SELECT id, post_id, content, nickname, created_at, author_id, author_type, ip_hint FROM community_comments WHERE post_id = ? ORDER BY created_at, id LIMIT 500", commentMapper, postId);
     }
 
     @Transactional
-    public void deleteOwnedComment(String id, String token) {
-        requireToken("community_comments", id, token);
+    public void deleteOwnedComment(String id, String token, String viewerId) {
+        if (!ownedByMember("community_comments", id, viewerId)) requireToken("community_comments", id, token);
         removeComment(id);
+    }
+
+    private boolean ownedByMember(String table, String id, String viewerId) {
+        if (viewerId == null || viewerId.isBlank()) return false;
+        return jdbc.queryForObject("SELECT COUNT(*) FROM " + table + " WHERE id = ? AND author_type = 'MEMBER' AND author_id = ?", Integer.class, id, viewerId) > 0;
     }
 
     @Transactional
@@ -161,9 +168,10 @@ public class CommunityPostService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(secret);
     }
 
-    private String nickname() {
-        byte[] suffix = new byte[3]; random.nextBytes(suffix);
-        return "익명" + HexFormat.of().formatHex(suffix);
+    /** Who is writing: a signed-in member under their nickname, or an anonymous visitor shown as "ㅇㅇ(ip)" like DC. */
+    public static Author author(MemberService.Member member, String address) {
+        return member != null ? new Author(member.id(), "MEMBER", member.nickname(), null)
+                : new Author(null, "ANON", "ㅇㅇ", ClientAddress.hint(address));
     }
 
     private static String text(String raw, int min, int max, String field) {
@@ -180,8 +188,17 @@ public class CommunityPostService {
 
     public record PostInput(String category, String title, String content) {}
     public record CommentInput(String content) {}
-    public record Post(String id, String category, String title, String content, String nickname, int viewCount, int commentCount, String createdAt) {}
-    public record Comment(String id, String postId, String content, String nickname, String createdAt) {}
+    public record Author(String id, String type, String nickname, String ipHint) {
+        public boolean member() { return "MEMBER".equals(type); }
+    }
+    public record Post(String id, String category, String title, String content, String nickname, int viewCount, int commentCount, String createdAt,
+                       @JsonIgnore String authorId, String authorType, String ipHint, boolean mine) {
+        public Post seenBy(String viewerId) { return viewerId != null && "MEMBER".equals(authorType) && viewerId.equals(authorId) ? new Post(id, category, title, content, nickname, viewCount, commentCount, createdAt, authorId, authorType, ipHint, true) : this; }
+    }
+    public record Comment(String id, String postId, String content, String nickname, String createdAt,
+                          @JsonIgnore String authorId, String authorType, String ipHint, boolean mine) {
+        public Comment seenBy(String viewerId) { return viewerId != null && "MEMBER".equals(authorType) && viewerId.equals(authorId) ? new Comment(id, postId, content, nickname, createdAt, authorId, authorType, ipHint, true) : this; }
+    }
     public record CreatedPost(Post post, String deleteToken) {}
     public record CreatedComment(Comment comment, String deleteToken) {}
     public record PostPage(List<Post> items, long total, int page, int size) {}

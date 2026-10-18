@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
-import { announcePostChange, deleteComment, deletePost, fetchComments, fetchPost, getPostToken, postCategoryLabels, postDateTime, postTime, rememberPostToken, writeComment, type Post, type PostComment } from "@/lib/posts";
+import { announcePostChange, authorInitial, authorLabel, deleteComment, deletePost, fetchComments, fetchPost, getPostToken, postCategoryLabels, postDateTime, postTime, rememberPostToken, writeComment, type Post, type PostComment } from "@/lib/posts";
+import { useAuth } from "../auth-provider";
 import { Icon } from "../icons";
 
 function DeleteControl({ label, owned, busy, onDelete }: { label: string; owned: boolean; busy: boolean; onDelete: (token?: string) => Promise<void> }) {
@@ -22,6 +23,7 @@ function DeleteControl({ label, owned, busy, onDelete }: { label: string; owned:
 
 export function PostDetail({ id }: { id: string }) {
   const router = useRouter();
+  const { member } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<PostComment[] | null>(null);
   const [error, setError] = useState("");
@@ -56,8 +58,7 @@ export function PostDetail({ id }: { id: string }) {
     setBusy(true); setCommentError("");
     try {
       const result = await writeComment(id, draft.trim());
-      rememberPostToken(result.comment.id, result.deleteToken);
-      setOwnComments(current => ({ ...current, [result.comment.id]: result.deleteToken }));
+      if (result.deleteToken) { rememberPostToken(result.comment.id, result.deleteToken); setOwnComments(current => ({ ...current, [result.comment.id]: result.deleteToken })); }
       setComments(current => [...(current || []), result.comment]);
       setPost(current => current ? { ...current, commentCount: current.commentCount + 1 } : current);
       setDraft("");
@@ -67,7 +68,7 @@ export function PostDetail({ id }: { id: string }) {
   }
 
   async function removePost(token?: string) {
-    const value = token || ownToken;
+    const value = token || ownToken || (post?.mine ? "session" : undefined);
     if (!value) throw new Error("삭제 코드를 입력해 주세요.");
     setBusy(true);
     try { await deletePost(id, value); router.push("/community"); }
@@ -75,7 +76,7 @@ export function PostDetail({ id }: { id: string }) {
   }
 
   async function removeComment(commentId: string, token?: string) {
-    const value = token || ownComments[commentId];
+    const value = token || ownComments[commentId] || (comments?.find(comment => comment.id === commentId)?.mine ? "session" : undefined);
     if (!value) throw new Error("삭제 코드를 입력해 주세요.");
     setBusy(true);
     try {
@@ -93,19 +94,19 @@ export function PostDetail({ id }: { id: string }) {
     <header className="post-detail-head">
       <span className="post-detail-category">{postCategoryLabels[post.category] || post.category}</span>
       <h1>{post.title}</h1>
-      <div className="post-detail-meta"><span className="home-row-avatar-anon" aria-hidden="true">익</span><span>{post.nickname}</span><span className="review-meta-dot" aria-hidden="true">·</span><time dateTime={post.createdAt} title={postDateTime(post.createdAt)}>{postTime(post.createdAt)}</time><span className="review-meta-dot" aria-hidden="true">·</span><span><Icon name="eye" size={13} /> {post.viewCount}</span><span><Icon name="comment" size={13} /> {post.commentCount}</span></div>
+      <div className="post-detail-meta"><span className={`home-row-avatar-anon${post.authorType === "MEMBER" ? " is-member" : ""}`} aria-hidden="true">{authorInitial(post)}</span><span className={`post-author${post.authorType === "MEMBER" ? " is-member" : ""}`}>{authorLabel(post)}{post.authorType === "MEMBER" && <small>회원</small>}</span><span className="review-meta-dot" aria-hidden="true">·</span><time dateTime={post.createdAt} title={postDateTime(post.createdAt)}>{postTime(post.createdAt)}</time><span className="review-meta-dot" aria-hidden="true">·</span><span><Icon name="eye" size={13} /> {post.viewCount}</span><span><Icon name="comment" size={13} /> {post.commentCount}</span></div>
     </header>
     <div className="post-detail-body">{post.content}</div>
-    <div className="post-detail-actions"><Link href="/community" className="review-button review-button-quiet">목록</Link><DeleteControl label="글" owned={Boolean(ownToken)} busy={busy} onDelete={removePost} /></div>
+    <div className="post-detail-actions"><Link href="/community" className="review-button review-button-quiet">목록</Link><DeleteControl label="글" owned={Boolean(ownToken) || post.mine} busy={busy} onDelete={removePost} /></div>
     <section className="post-comments" aria-labelledby="comments-title">
       <h2 id="comments-title">댓글 <span>{post.commentCount}</span></h2>
       {comments?.length ? <ol>{comments.map(comment => <li key={comment.id} className="post-comment">
-        <div className="post-comment-meta"><span className="home-row-avatar-anon" aria-hidden="true">익</span><strong>{comment.nickname}</strong><time dateTime={comment.createdAt} title={postDateTime(comment.createdAt)}>{postTime(comment.createdAt)}</time></div>
+        <div className="post-comment-meta"><span className={`home-row-avatar-anon${comment.authorType === "MEMBER" ? " is-member" : ""}`} aria-hidden="true">{authorInitial(comment)}</span><strong className={comment.authorType === "MEMBER" ? "is-member" : ""}>{authorLabel(comment)}</strong><time dateTime={comment.createdAt} title={postDateTime(comment.createdAt)}>{postTime(comment.createdAt)}</time></div>
         <p>{comment.content}</p>
-        <div className="post-comment-actions"><DeleteControl label="댓글" owned={Boolean(ownComments[comment.id])} busy={busy} onDelete={token => removeComment(comment.id, token)} /></div>
+        <div className="post-comment-actions"><DeleteControl label="댓글" owned={Boolean(ownComments[comment.id]) || comment.mine} busy={busy} onDelete={token => removeComment(comment.id, token)} /></div>
       </li>)}</ol> : <p className="post-comments-empty">아직 댓글이 없어요. 첫 댓글을 남겨 보세요.</p>}
       <form className="post-comment-form" onSubmit={submitComment} aria-label="댓글 작성">
-        <textarea aria-label="댓글 내용" value={draft} onChange={event => setDraft(event.target.value)} placeholder="익명으로 댓글을 남겨요" maxLength={1000} rows={3} disabled={busy} required />
+        <textarea aria-label="댓글 내용" value={draft} onChange={event => setDraft(event.target.value)} placeholder={member ? `${member.nickname} 님으로 댓글을 남겨요` : "ㅇㅇ(IP) 익명으로 댓글을 남겨요"} maxLength={1000} rows={3} disabled={busy} required />
         {commentError && <p className="review-error" role="alert">{commentError}</p>}
         <div><span>{draft.length.toLocaleString()}/1,000</span><button type="submit" className="review-button review-button-primary" disabled={busy || !draft.trim()}>{busy ? "등록 중…" : "댓글 등록"}</button></div>
       </form>

@@ -17,17 +17,26 @@ export function isPostCategory(value: string | undefined): value is PostCategory
 export type HomeFeed = { popular: Post[]; latest: Post[]; byCategory: Partial<Record<PostCategory, Post[]>>; total: number };
 export type PostSort = "latest" | "popular" | "comments";
 
-export type Post = {
+export type AuthorType = "MEMBER" | "ANON";
+type Authored = { nickname: string; authorType: AuthorType; ipHint: string | null; mine: boolean };
+export type Post = Authored & {
   id: string;
   category: PostCategory;
   title: string;
   content: string;
-  nickname: string;
   viewCount: number;
   commentCount: number;
   createdAt: string;
 };
-export type PostComment = { id: string; postId: string; content: string; nickname: string; createdAt: string };
+export type PostComment = Authored & { id: string; postId: string; content: string; createdAt: string };
+
+/** DC-style byline: members show their nickname, visitors show "ㅇㅇ(118.235)". */
+export function authorLabel(item: Pick<Authored, "nickname" | "authorType" | "ipHint">) {
+  return item.authorType === "ANON" && item.ipHint ? `${item.nickname}(${item.ipHint})` : item.nickname;
+}
+export function authorInitial(item: Pick<Authored, "nickname" | "authorType">) {
+  return item.authorType === "MEMBER" ? item.nickname.trim().charAt(0) || "회" : "ㅇ";
+}
 export type PostPage = { items: Post[]; total: number; page: number; size: number };
 export type PostInput = { category: PostCategory; title: string; content: string };
 

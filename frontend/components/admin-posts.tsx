@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/submissions";
-import { fetchComments, postCategories, postCategoryLabels, postDateTime, type Post, type PostCategory, type PostComment, type PostPage, type PostSort } from "@/lib/posts";
+import { authorLabel, fetchComments, postCategories, postCategoryLabels, postDateTime, type Post, type PostCategory, type PostComment, type PostPage, type PostSort } from "@/lib/posts";
 import { Icon } from "./icons";
 
 const pageSize = 10;
@@ -107,7 +107,7 @@ export function AdminPosts({ onSessionExpired }: { onSessionExpired: () => void 
       return <article className="admin-review-item admin-post-item" key={post.id}>
         <div className="admin-review-meta"><span><span className="admin-post-category">{postCategoryLabels[post.category] ?? post.category}</span><Link href={`/community/${encodeURIComponent(post.id)}`} target="_blank">글 보기 ↗</Link></span><time dateTime={post.createdAt}>{postDateTime(post.createdAt)}</time></div>
         <h3>{post.title}</h3><p className="admin-review-body admin-post-body">{post.content}</p>
-        <div className="admin-post-stats"><span>{post.nickname || "익명"}</span><span>조회 {post.viewCount}</span><span>댓글 {post.commentCount}</span></div>
+        <div className="admin-post-stats"><span>{authorLabel(post)}{post.authorType === "MEMBER" ? " · 회원" : ""}</span><span>조회 {post.viewCount}</span><span>댓글 {post.commentCount}</span></div>
         <div className="admin-post-actions"><button type="button" className="admin-post-toggle" aria-expanded={expanded} aria-controls={`admin-post-comments-${post.id}`} disabled={loading || busy} onClick={() => toggleComments(post)}><Icon name="chevron" size={15} />{expanded ? "댓글 닫기" : `댓글 보기 (${post.commentCount})`}</button>{confirmId === post.id ? null : <button type="button" className="admin-review-delete" disabled={loading || busy} onClick={() => { setConfirmId(post.id); setCommentConfirmId(null); }}>글 삭제</button>}</div>
         {confirmId === post.id && <div className="admin-review-delete-confirm"><p>이 글을 삭제할까요? 달린 댓글도 함께 삭제되며 복구할 수 없습니다.</p><div><button type="button" className="button button-outline" disabled={busy} onClick={() => setConfirmId(null)}>취소</button><button type="button" className="button button-reject" disabled={busy} onClick={() => void removePost(post)}>{deletingId === post.id ? "삭제 중…" : "글 삭제 확정"}</button></div></div>}
         {expanded && <div className="admin-post-comments" id={`admin-post-comments-${post.id}`}>
@@ -115,7 +115,7 @@ export function AdminPosts({ onSessionExpired }: { onSessionExpired: () => void 
           {thread?.error && <p className="admin-error" role="alert">{thread.error}</p>}
           {thread && !thread.loading && !thread.error && thread.items.length === 0 && <p className="admin-post-comments-status">아직 댓글이 없습니다.</p>}
           {thread && thread.items.length > 0 && <ul>{thread.items.map(comment => <li key={comment.id}>
-            <div className="admin-post-comment-meta"><strong>{comment.nickname || "익명"}</strong><time dateTime={comment.createdAt}>{postDateTime(comment.createdAt)}</time></div>
+            <div className="admin-post-comment-meta"><strong>{authorLabel(comment)}</strong><time dateTime={comment.createdAt}>{postDateTime(comment.createdAt)}</time></div>
             <p>{comment.content}</p>
             {commentConfirmId === comment.id ? <div className="admin-review-delete-confirm"><p>이 댓글을 삭제할까요? 복구할 수 없습니다.</p><div><button type="button" className="button button-outline" disabled={busy} onClick={() => setCommentConfirmId(null)}>취소</button><button type="button" className="button button-reject" disabled={busy} onClick={() => void removeComment(post, comment)}>{deletingCommentId === comment.id ? "삭제 중…" : "댓글 삭제 확정"}</button></div></div> : <button type="button" className="admin-review-delete" disabled={busy} onClick={() => { setCommentConfirmId(comment.id); setConfirmId(null); }}>댓글 삭제</button>}
           </li>)}</ul>}

@@ -1,65 +1,89 @@
 package kr.co.buchu.community;
 
 import jakarta.servlet.http.HttpServletRequest;
+import kr.co.buchu.member.MemberAuthController;
+import kr.co.buchu.member.MemberService;
+import kr.co.buchu.security.ClientAddress;
 import kr.co.buchu.security.RequestRateLimiter;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class CommunityPostController {
     private final CommunityPostService posts;
+    private final MemberService members;
     private final RequestRateLimiter limits;
 
-    public CommunityPostController(CommunityPostService posts, RequestRateLimiter limits) {
-        this.posts = posts; this.limits = limits;
+    public CommunityPostController(CommunityPostService posts, MemberService members, RequestRateLimiter limits) {
+        this.posts = posts; this.members = members; this.limits = limits;
     }
+
+    private MemberService.Member member(Authentication authentication) { return MemberAuthController.current(authentication, members).orElse(null); }
+    private static String viewer(MemberService.Member member) { return member == null ? null : member.id(); }
+    private static List<CommunityPostService.Post> seen(List<CommunityPostService.Post> items, String viewer) { return items.stream().map(post -> post.seenBy(viewer)).toList(); }
 
     @GetMapping("/posts")
     public CommunityPostService.PostPage list(@RequestParam(required = false) String category,
                                               @RequestParam(defaultValue = "latest") String sort,
                                               @RequestParam(required = false) String q,
                                               @RequestParam(defaultValue = "0") int page,
-                                              @RequestParam(defaultValue = "20") int size) {
-        return posts.list(category, sort, q, page, size);
+                                              @RequestParam(defaultValue = "20") int size,
+                                              Authentication authentication) {
+        CommunityPostService.PostPage result = posts.list(category, sort, q, page, size);
+        return new CommunityPostService.PostPage(seen(result.items(), viewer(member(authentication))), result.total(), result.page(), result.size());
     }
 
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommunityPostService.CreatedPost create(@RequestBody CommunityPostService.PostInput input, HttpServletRequest request) {
-        limits.check("community-posts", request.getRemoteAddr(), 5, 60_000);
-        return posts.create(input);
+    public CommunityPostService.CreatedPost create(@RequestBody CommunityPostService.PostInput input, HttpServletRequest request, Authentication authentication) {
+        String address = ClientAddress.of(request);
+        limits.check("community-posts", address, 5, 60_000);
+        return posts.create(input, CommunityPostService.author(member(authentication), address));
     }
 
     @GetMapping("/posts/home")
-    public CommunityPostService.HomeFeed home() { return posts.home(); }
+    public CommunityPostService.HomeFeed home(Authentication authentication) {
+        CommunityPostService.HomeFeed feed = posts.home();
+        String viewer = viewer(member(authentication));
+        Map<String, List<CommunityPostService.Post>> grouped = new LinkedHashMap<>();
+        feed.byCategory().forEach((category, items) -> grouped.put(category, seen(items, viewer)));
+        return new CommunityPostService.HomeFeed(seen(feed.popular(), viewer), seen(feed.latest(), viewer), grouped, feed.total());
+    }
 
     @GetMapping("/posts/{id}")
-    public CommunityPostService.Post read(@PathVariable String id) { return posts.read(id); }
+    public CommunityPostService.Post read(@PathVariable String id, Authentication authentication) { return posts.read(id).seenBy(viewer(member(authentication))); }
 
     @DeleteMapping("/posts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String id, @RequestHeader(value = "X-Post-Token", required = false) String token) {
-        posts.deleteOwned(id, token);
+    public void delete(@PathVariable String id, @RequestHeader(value = "X-Post-Token", required = false) String token, Authentication authentication) {
+        posts.deleteOwned(id, token, viewer(member(authentication)));
     }
 
     @GetMapping("/posts/{id}/comments")
-    public List<CommunityPostService.Comment> comments(@PathVariable String id) { return posts.comments(id); }
+    public List<CommunityPostService.Comment> comments(@PathVariable String id, Authentication authentication) {
+        String viewer = viewer(member(authentication));
+        return posts.comments(id).stream().map(comment -> comment.seenBy(viewer)).toList();
+    }
 
     @PostMapping("/posts/{id}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public CommunityPostService.CreatedComment comment(@PathVariable String id, @RequestBody CommunityPostService.CommentInput input,
-                                                       HttpServletRequest request) {
-        limits.check("community-comments", request.getRemoteAddr(), 15, 60_000);
-        return posts.comment(id, input);
+                                                       HttpServletRequest request, Authentication authentication) {
+        String address = ClientAddress.of(request);
+        limits.check("community-comments", address, 15, 60_000);
+        return posts.comment(id, input, CommunityPostService.author(member(authentication), address));
     }
 
     @DeleteMapping("/comments/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@PathVariable String id, @RequestHeader(value = "X-Post-Token", required = false) String token) {
-        posts.deleteOwnedComment(id, token);
+    public void deleteComment(@PathVariable String id, @RequestHeader(value = "X-Post-Token", required = false) String token, Authentication authentication) {
+        posts.deleteOwnedComment(id, token, viewer(member(authentication)));
     }
 
     @GetMapping("/admin/posts")

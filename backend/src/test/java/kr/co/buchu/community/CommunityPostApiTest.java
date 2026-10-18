@@ -36,7 +36,7 @@ class CommunityPostApiTest {
     @Test void postIsPersistedAnonymouslyWithDeleteTokenAndViewCountGrowsOnRead() throws Exception {
         JsonNode created = create("FREE", "첫 글입니다");
         JsonNode post = created.path("post");
-        assertThat(post.path("nickname").asText()).matches("익명[0-9a-f]{6}");
+        assertThat(post.path("nickname").asText()).isEqualTo("ㅇㅇ");
         assertThat(created.path("deleteToken").asText()).hasSize(43);
         String hash = jdbc.queryForObject("SELECT delete_token_hash FROM community_posts WHERE id = ?", String.class, post.path("id").asText());
         assertThat(hash).hasSize(64).isNotEqualTo(created.path("deleteToken").asText());
@@ -102,7 +102,7 @@ class CommunityPostApiTest {
         mvc.perform(post("/api/posts/{id}/comments", postId).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"content\":\"   \"}")).andExpect(status().isBadRequest());
         JsonNode first = comment(postId, "첫 댓글"), second = comment(postId, "둘째 댓글");
-        assertThat(first.path("comment").path("nickname").asText()).matches("익명[0-9a-f]{6}");
+        assertThat(first.path("comment").path("nickname").asText()).isEqualTo("ㅇㅇ");
         mvc.perform(get("/api/posts/{id}/comments", postId)).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id").value(first.path("comment").path("id").asText()));
         mvc.perform(get("/api/posts/{id}", postId)).andExpect(jsonPath("$.commentCount").value(2));

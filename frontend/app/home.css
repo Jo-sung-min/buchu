@@ -52,6 +52,10 @@
 .home-row-avatar{display:inline-flex;flex-shrink:0}
 .home-row-avatar .brand-avatar{width:28px;height:28px;border-radius:50%;font-size:11px;background:color-mix(in srgb,var(--brand-color) 14%,var(--surface));color:var(--brand-color);box-shadow:inset 0 0 0 1px var(--line)}
 .home-row-avatar-anon{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface-selected);color:var(--muted);font-size:11px;font-weight:700}
+.home-row-avatar-anon.is-member{background:var(--ink);color:var(--page)}
+.post-row-author{flex-shrink:0;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--muted)}
+.post-row-author.is-member{color:var(--text-secondary);font-weight:600}
+.home-topics .post-row-author{display:none}
 .home-row-topic{flex-shrink:0;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:600;color:var(--text-secondary)}
 a.home-row-topic:hover{text-decoration:underline;text-underline-offset:3px}
 .home-row-title{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
