@@ -16,14 +16,18 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 /** Anonymous community posts and comments. Authors keep a one-time delete token; nothing identifying is stored. */
 @Service
 public class CommunityPostService {
-    public static final Set<String> CATEGORIES = Set.of("FREE", "QUESTION", "TIP", "INCOME");
+    /** Display order of topics on the front page. */
+    public static final List<String> CATEGORY_ORDER = List.of("FREE", "INCOME", "QUESTION", "TIP", "STOCK", "REALTY", "WORK", "LOVE", "HEALTH", "STORY");
+    public static final Set<String> CATEGORIES = Set.copyOf(CATEGORY_ORDER);
     private static final String POST_COLUMNS = "id, category, title, content, nickname, view_count, comment_count, created_at";
     private final JdbcTemplate jdbc;
     private final SecureRandom random = new SecureRandom();
@@ -74,6 +78,19 @@ public class CommunityPostService {
         args.add(size); args.add(page * size);
         List<Post> items = jdbc.query("SELECT " + POST_COLUMNS + " FROM community_posts" + filter + " ORDER BY " + order + " LIMIT ? OFFSET ?", postMapper, args.toArray());
         return new PostPage(items, total, page, size);
+    }
+
+    /** Everything the front page shows in one round trip: today's hot posts, the newest, and the newest per topic. */
+    @Transactional(readOnly = true)
+    public HomeFeed home() {
+        List<Post> popular = jdbc.query("SELECT " + POST_COLUMNS + " FROM community_posts ORDER BY (comment_count * 3 + view_count) DESC, created_at DESC, id DESC LIMIT 10", postMapper);
+        List<Post> latest = jdbc.query("SELECT " + POST_COLUMNS + " FROM community_posts ORDER BY created_at DESC, id DESC LIMIT 10", postMapper);
+        Map<String, List<Post>> byCategory = new LinkedHashMap<>();
+        for (String category : CATEGORY_ORDER) byCategory.put(category, new ArrayList<>());
+        jdbc.query("SELECT " + POST_COLUMNS + " FROM (SELECT " + POST_COLUMNS + ", ROW_NUMBER() OVER (PARTITION BY category ORDER BY created_at DESC, id DESC) AS rn FROM community_posts) ranked WHERE rn <= 5 ORDER BY category, created_at DESC, id DESC", postMapper)
+                .forEach(post -> byCategory.computeIfAbsent(post.category(), ignored -> new ArrayList<>()).add(post));
+        long total = jdbc.queryForObject("SELECT COUNT(*) FROM community_posts", Long.class);
+        return new HomeFeed(popular, latest, byCategory, total);
     }
 
     @Transactional
@@ -168,4 +185,5 @@ public class CommunityPostService {
     public record CreatedPost(Post post, String deleteToken) {}
     public record CreatedComment(Comment comment, String deleteToken) {}
     public record PostPage(List<Post> items, long total, int page, int size) {}
+    public record HomeFeed(List<Post> popular, List<Post> latest, Map<String, List<Post>> byCategory, long total) {}
 }

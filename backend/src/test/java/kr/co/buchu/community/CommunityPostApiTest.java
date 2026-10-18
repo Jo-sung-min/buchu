@@ -80,6 +80,21 @@ class CommunityPostApiTest {
         mvc.perform(get("/api/posts").param("size", "101")).andExpect(status().isBadRequest());
     }
 
+    @Test void homeFeedGroupsHotLatestAndPerTopicPosts() throws Exception {
+        String stock = create("STOCK", "오늘 주식 어땠나요").path("post").path("id").asText();
+        create("LOVE", "연애와 부업 병행");
+        for (int index = 0; index < 6; index++) create("FREE", "자유 글 " + index);
+        comment(stock, "오늘 좀 빠졌죠");
+        mvc.perform(get("/api/posts/home")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(8))
+                .andExpect(jsonPath("$.popular[0].id").value(stock))
+                .andExpect(jsonPath("$.latest[0].title").value("자유 글 5"))
+                .andExpect(jsonPath("$.byCategory.FREE", hasSize(5)))
+                .andExpect(jsonPath("$.byCategory.STOCK", hasSize(1)))
+                .andExpect(jsonPath("$.byCategory.HEALTH", hasSize(0)));
+        postInput(validInput("UNKNOWN", "분류 없음")).andExpect(status().isBadRequest());
+    }
+
     @Test void commentsRequireAnExistingPostAndKeepTheCountInSync() throws Exception {
         String postId = create("QUESTION", "댓글 테스트").path("post").path("id").asText();
         mvc.perform(post("/api/posts/{id}/comments", "missing").with(csrf()).contentType(MediaType.APPLICATION_JSON)

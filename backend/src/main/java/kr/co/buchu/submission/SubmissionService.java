@@ -192,7 +192,7 @@ public class SubmissionService {
         if (tags.size() > 10 || (value.tags() != null && value.tags().size() > 10)) throw invalid("태그는 10개까지 등록할 수 있습니다.");
         String category = value.category() == null || value.category().isBlank() ? "affiliate" : value.category();
         String cost = value.cost() == null || value.cost().isBlank() ? "check" : value.cost();
-        if (!Set.of("affiliate", "campaign", "content", "commerce", "gig", "apptech").contains(category) || !Set.of("free", "check").contains(cost)) throw invalid("분류 또는 참여 비용을 확인해 주세요.");
+        if (!Set.of("affiliate", "campaign", "content", "commerce", "gig", "home", "apptech").contains(category) || !Set.of("free", "check").contains(cost)) throw invalid("분류 또는 참여 비용을 확인해 주세요.");
         String email = text(value.contactEmail(), 254, "담당자 이메일");
         if (!email.isBlank() && !email.matches("[^\\s<>@]+@[^\\s<>@]+\\.[^\\s<>@]+")) throw invalid("담당자 이메일 형식을 확인해 주세요.");
         String url = text(value.officialUrl(), 2000, "공식 사이트 주소");

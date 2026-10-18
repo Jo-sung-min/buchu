@@ -33,6 +33,9 @@ public class CommunityPostController {
         return posts.create(input);
     }
 
+    @GetMapping("/posts/home")
+    public CommunityPostService.HomeFeed home() { return posts.home(); }
+
     @GetMapping("/posts/{id}")
     public CommunityPostService.Post read(@PathVariable String id) { return posts.read(id); }
 

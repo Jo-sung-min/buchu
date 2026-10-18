@@ -1,8 +1,20 @@
 import { api } from "./submissions";
 
-export type PostCategory = "FREE" | "QUESTION" | "TIP" | "INCOME";
-export const postCategories: [PostCategory, string][] = [["FREE", "자유"], ["QUESTION", "질문"], ["TIP", "꿀팁"], ["INCOME", "수익 인증"]];
+export type PostCategory = "FREE" | "INCOME" | "QUESTION" | "TIP" | "STOCK" | "REALTY" | "WORK" | "LOVE" | "HEALTH" | "STORY";
+/** Front-page order. The first four are about side jobs; the rest are the everyday topics people actually talk about. */
+export const postCategories: [PostCategory, string][] = [
+  ["FREE", "부업 수다"], ["INCOME", "수익 인증"], ["QUESTION", "질문"], ["TIP", "꿀팁"],
+  ["STOCK", "주식·투자"], ["REALTY", "부동산"], ["WORK", "직장인 고민"], ["LOVE", "결혼·연애"], ["HEALTH", "헬스·다이어트"], ["STORY", "썰·유머"],
+];
 export const postCategoryLabels: Record<PostCategory, string> = Object.fromEntries(postCategories) as Record<PostCategory, string>;
+export const postCategoryDescriptions: Record<PostCategory, string> = {
+  FREE: "부업하며 드는 생각, 가볍게 떠들어요", INCOME: "이번 달 얼마 벌었는지 솔직하게", QUESTION: "막히는 부분, 먼저 해본 사람에게", TIP: "써먹을 수 있는 노하우",
+  STOCK: "오늘 장은 어땠나요", REALTY: "청약, 전세, 내 집 마련 이야기", WORK: "회사에서 있었던 일, 이직 고민", LOVE: "연애, 결혼 준비, 신혼 이야기", HEALTH: "운동, 식단, 몸 만들기", STORY: "웃긴 썰, 황당한 경험담",
+};
+export function isPostCategory(value: string | undefined): value is PostCategory {
+  return Boolean(value) && value! in postCategoryLabels;
+}
+export type HomeFeed = { popular: Post[]; latest: Post[]; byCategory: Partial<Record<PostCategory, Post[]>>; total: number };
 export type PostSort = "latest" | "popular" | "comments";
 
 export type Post = {
@@ -72,6 +84,10 @@ export function fetchPosts({ category, sort = "latest", q, page = 0, size = 20, 
   if (category) query.set("category", category);
   if (q?.trim()) query.set("q", q.trim());
   return api<PostPage>(`/api/posts?${query}`, { signal });
+}
+
+export function fetchHomeFeed(signal?: AbortSignal) {
+  return api<HomeFeed>("/api/posts/home", { signal });
 }
 
 export function fetchPost(id: string, signal?: AbortSignal) {

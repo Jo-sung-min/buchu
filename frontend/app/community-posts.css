@@ -6,6 +6,8 @@
 .post-list-search{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
 .post-list-search input{width:150px;min-width:0;border:0;outline:0;background:transparent;font-size:12px;color:var(--ink)}
 .post-list-tools select{border:0;background:transparent;color:var(--muted);font-size:12px;cursor:pointer}
+.post-list-categories{flex-wrap:wrap}
+.post-list-description{font-size:12px;color:var(--muted);margin:-4px 6px 10px}
 .post-list-count{font-size:12px;color:var(--muted);padding:0 6px 8px;border-bottom:1px solid var(--line)}
 .post-list-count b{color:var(--text-secondary);font-weight:600}
 .post-row-comments{margin-left:6px;font-size:12px;font-weight:700;color:var(--text-secondary)}
