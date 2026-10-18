@@ -16,10 +16,12 @@ import "./controls.css";
 import "./courses.css";
 import "./course-admin.css";
 import "./topic-layout.css";
+import "./home.css";
+import "./community-posts.css";
 
 export const metadata: Metadata = {
-  title: { default: "부추 — 부업 정보와 익명 후기", template: "%s | 부추" },
-  description: "부업 정보와 익명 후기, 기업의 협업 기회부터 부업 전용 클래스까지. 내 시간과 초기 비용에 맞는 부업을 부추에서 시작하세요.",
+  title: { default: "부추 — 부업하는 사람들의 소통 공간", template: "%s | 부추" },
+  description: "부업 경험과 질문을 익명으로 나누는 커뮤니티. 부업 정보와 익명 후기, 기업 홍보, 부업 클래스까지 부추에서 시작하세요.",
   applicationName: "부추",
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

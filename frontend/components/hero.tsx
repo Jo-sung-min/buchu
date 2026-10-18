@@ -16,5 +16,5 @@ export function Hero() {
   return <section className="hero"><div className="container hero-inner"><div className="hero-copy"><div className="eyebrow"><span />작은 시작, 새로운 가능성</div><h1>좋아하는 걸 나누고,<br /><span>부수입의 싹</span>을 틔워요.</h1><p>내 취향으로 고른 상품, 정성 들여 쓴 추천 한 줄.<br />일상 속 작은 추천을 부업으로 연결해 보세요.</p><a href="#discover" className="button button-green">나에게 맞는 부업 찾기 <Icon name="arrow" size={18} /></a><div className="hero-footnote"><span className="mini-leaves">✳</span>시작이 막막할 땐, 부추와 함께.</div></div><HeroArtwork /></div></section>;
 }
 export function IntroStrip() {
-  return <div className="container"><div className="intro-strip"><div className="intro-icon"><Icon name="link" size={22} /></div><div><strong>모두의 마케터</strong><p>나의 추천이 누군가의 선택이 되는 일. 제휴마케팅부터 시작해요.</p></div><Link href="/guide">제휴마케팅이 처음이라면 <Icon name="arrow" size={16} /></Link></div></div>;
+  return <div className="container"><div className="intro-strip"><div className="intro-icon"><Icon name="link" size={22} /></div><div><strong>부업 정보</strong><p>나의 추천이 누군가의 선택이 되는 일. 제휴마케팅부터 시작해요.</p></div><Link href="/guide">제휴마케팅이 처음이라면 <Icon name="arrow" size={16} /></Link></div></div>;
 }

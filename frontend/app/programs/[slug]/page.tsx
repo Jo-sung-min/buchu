@@ -20,10 +20,10 @@ export default async function ProgramPage({ params }: Props) {
   const cover = safeContentUrl(program.thumbnailUrl, true);
   const expired = program.deadline && program.deadline < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
   return <div className="container detail-page">
-    <Link href={help ? "/help" : "/"} className="back-link"><Icon name="arrow" size={16} />{help ? "도와줘!" : "모두의 마케터"}로 돌아가기</Link>
+    <Link href={help ? "/help" : "/programs"} className="back-link"><Icon name="arrow" size={16} />{help ? "기업 홍보" : "부업 정보"}로 돌아가기</Link>
     <div className="detail-layout"><article>
       <div className="detail-heading"><BrandAvatar program={program} large /><div>
-        <span className="detail-board-label">{help ? `도와줘! · ${program.helpType === "RECRUITMENT" ? "인재·협업 모집" : "홍보·마케팅"}` : `모두의 마케터 · ${program.category === "affiliate" ? "제휴마케팅" : "캠페인"}`}{help && <span className="company-post-label">기업 글</span>}</span>
+        <span className="detail-board-label">{help ? `기업 홍보 · ${program.helpType === "RECRUITMENT" ? "인재·협업 모집" : "홍보·마케팅"}` : `부업 정보 · ${program.category === "affiliate" ? "제휴마케팅" : "캠페인"}`}{help && <span className="company-post-label">기업 글</span>}</span>
         {program.companyName && <span className="company-label">{program.companyName}</span>}
         <h1>{program.name}</h1><p>{program.tagline}</p>
       </div></div>

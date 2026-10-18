@@ -10,7 +10,7 @@ export type SubmissionStatus = "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
 export type SubmissionChannel = "blog" | "sns" | "video" | "website";
 export type SubmissionBoard = "MARKETER" | "HELP";
 export type HelpType = "PROMOTION" | "RECRUITMENT";
-export const submissionBoardLabels: Record<SubmissionBoard, string> = { MARKETER: "모두의 마케터", HELP: "도와줘!" };
+export const submissionBoardLabels: Record<SubmissionBoard, string> = { MARKETER: "부업 정보", HELP: "기업 홍보" };
 export const helpTypeLabels: Record<HelpType, string> = { PROMOTION: "홍보 · 마케팅", RECRUITMENT: "인재 · 협업 모집" };
 
 export type SubmissionInput = {
