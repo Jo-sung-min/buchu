@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/programs";
-import { channelLabels } from "@/lib/types";
+import { channelLabels, programCategoryLabel } from "@/lib/types";
 import { BrandAvatar, SaveButton } from "@/components/program-card";
 import { DetailContent, safeContentUrl } from "@/components/detail-content";
 import { ProgramReviews } from "@/components/reviews/program-reviews";
@@ -23,7 +23,7 @@ export default async function ProgramPage({ params }: Props) {
     <Link href={help ? "/help" : "/programs"} className="back-link"><Icon name="arrow" size={16} />{help ? "기업 홍보" : "부업 정보"}로 돌아가기</Link>
     <div className="detail-layout"><article>
       <div className="detail-heading"><BrandAvatar program={program} large /><div>
-        <span className="detail-board-label">{help ? `기업 홍보 · ${program.helpType === "RECRUITMENT" ? "인재·협업 모집" : "홍보·마케팅"}` : `부업 정보 · ${program.category === "affiliate" ? "제휴마케팅" : "캠페인"}`}{help && <span className="company-post-label">기업 글</span>}</span>
+        <span className="detail-board-label">{help ? `기업 홍보 · ${program.helpType === "RECRUITMENT" ? "인재·협업 모집" : "홍보·마케팅"}` : `부업 정보 · ${programCategoryLabel(program.category)}`}{help && <span className="company-post-label">기업 글</span>}</span>
         {program.companyName && <span className="company-label">{program.companyName}</span>}
         <h1>{program.name}</h1><p>{program.tagline}</p>
       </div></div>

@@ -27,7 +27,7 @@ export type SubmissionInput = {
   tagline: string;
   description: string;
   officialUrl: string;
-  category: "affiliate" | "campaign";
+  category: import("./types").ProgramCategory;
   channels: SubmissionChannel[];
   cost: "free" | "check";
   costLabel: string;
