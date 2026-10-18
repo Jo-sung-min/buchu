@@ -25,7 +25,7 @@ if (!existsSync(wrapperPath)) {
 
 const command = isWindows ? process.env.ComSpec || "cmd.exe" : "sh";
 const args = isWindows
-  ? ["/d", "/s", "/c", "gradlew.bat", task]
+  ? ["/d", "/s", "/c", `""${wrapperPath}" ${task}"`]
   : ["./gradlew", task];
 
 const child = spawn(command, args, {
@@ -33,6 +33,7 @@ const child = spawn(command, args, {
   env: process.env,
   stdio: "inherit",
   windowsHide: true,
+  windowsVerbatimArguments: isWindows,
 });
 
 child.on("error", (error) => {
