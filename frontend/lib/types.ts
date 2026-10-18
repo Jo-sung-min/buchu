@@ -3,6 +3,7 @@ export type ProgramCategory = "affiliate" | "campaign" | "content" | "commerce" 
 export const programCategoryLabels: Record<ProgramCategory, string> = {
   affiliate: "제휴마케팅", campaign: "캠페인·체험단", content: "콘텐츠 수익", commerce: "온라인 판매", gig: "재능·서비스", home: "재택 알바", apptech: "앱테크·설문",
 };
+export const difficultyLabels: Record<Program["difficulty"], string> = { beginner: "입문", intermediate: "중급" };
 export function programCategoryLabel(category: string): string {
   return (programCategoryLabels as Record<string, string>)[category] || category;
 }

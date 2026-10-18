@@ -18,6 +18,7 @@ import "./course-admin.css";
 import "./topic-layout.css";
 import "./home.css";
 import "./community-posts.css";
+import "./programs.css";
 
 export const metadata: Metadata = {
   title: { default: "부추 — 부업하는 사람들의 소통 공간", template: "%s | 부추" },
