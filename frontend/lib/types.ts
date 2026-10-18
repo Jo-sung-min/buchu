@@ -14,6 +14,8 @@ export interface Program {
   deadline?: string;
   companyName?: string | null;
   thumbnailUrl?: string | null;
+  /** Optional logo for the brand mark; without it the official site's favicon is used. */
+  logoUrl?: string | null;
   content?: import("./submissions").RichDocument | null;
   slug: string;
   name: string;

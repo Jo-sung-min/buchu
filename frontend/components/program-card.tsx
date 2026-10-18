@@ -1,14 +1,23 @@
 "use client";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { Program } from "@/lib/types";
+import { faviconFor, safeImageUrl } from "@/lib/ads";
 import { Icon } from "./icons";
 import { useSaved } from "./saved-provider";
 import { safeContentUrl } from "./detail-content";
 
+/** Brand mark: an uploaded thumbnail, else a logo URL from the catalog, else the official site's favicon, else initials. */
 export function BrandAvatar({ program, large = false }: { program: Program; large?: boolean }) {
-  const imageUrl = safeContentUrl(program.thumbnailUrl, true);
-  return <span className={`brand-avatar ${large ? "brand-avatar-large" : ""}`} style={{ "--brand-color": program.brandColor, overflow: "hidden" } as CSSProperties}>{imageUrl ? <img src={imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : program.initials}</span>;
+  const [broken, setBroken] = useState(false);
+  const thumbnail = safeContentUrl(program.thumbnailUrl, true);
+  const logo = safeImageUrl(program.logoUrl);
+  const favicon = thumbnail || logo ? null : faviconFor(program.officialUrl);
+  const icon = !broken ? (logo || favicon) : null;
+  const style = { "--brand-color": program.brandColor, overflow: "hidden" } as CSSProperties;
+  if (thumbnail) return <span className={`brand-avatar ${large ? "brand-avatar-large" : ""}`} style={style}><img src={thumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></span>;
+  if (icon) return <span className={`brand-avatar brand-avatar-icon ${large ? "brand-avatar-large" : ""}`} style={style}><img src={icon} alt="" loading="lazy" decoding="async" onError={() => setBroken(true)} /></span>;
+  return <span className={`brand-avatar ${large ? "brand-avatar-large" : ""}`} style={style}>{program.initials}</span>;
 }
 export function SaveButton({ program, full = false }: { program: Program; full?: boolean }) {
   const { saved, ready, toggle } = useSaved();
