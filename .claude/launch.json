@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--workspace=frontend", "--", "-p", "3001"],
       "port": 3001
+    },
+    {
+      "name": "buchu-backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:backend"],
+      "port": 8082
     }
   ]
 }
