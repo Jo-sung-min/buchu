@@ -1,0 +1,55 @@
+/* 부업 정보 › 지역별 인력사무소 탭. 커뮤니티 보드의 필터·카운트 스타일을 그대로 쓰고 목록만 더한다. */
+.labor-intro { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; line-height: 1.8; color: var(--muted); margin: -6px 0 16px; word-break: keep-all; }
+.labor-intro > svg { flex-shrink: 0; margin-top: 3px; }
+.labor-intro b { color: var(--text-secondary); font-weight: 650; }
+.labor-intro a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.labor-sido > div { gap: 4px; }
+.labor-sido button span { font-size: 9px; color: var(--muted); margin-left: 3px; font-weight: 500; }
+.labor-sido button.active span { color: var(--accent); }
+.labor-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 14px; }
+.labor-controls select { border: 1px solid var(--line-strong); border-radius: var(--control-radius, 12px); background: var(--surface); color: var(--ink); font: inherit; font-size: 11px; padding: 8px 10px; max-width: 220px; cursor: pointer; }
+.labor-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.labor-toggle input { width: 15px; height: 15px; accent-color: var(--accent); }
+.labor-search { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 160px; border: 1px solid var(--line-strong); border-radius: var(--control-radius, 12px); padding: 0 10px; height: 34px; color: var(--muted); }
+.labor-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 11px; color: var(--ink); }
+.labor-search button { display: flex; padding: 2px; color: var(--muted); }
+.labor-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.labor-office { padding: 15px 0 14px; border-bottom: 1px solid var(--line); }
+.labor-office-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.labor-office-head h3 { font-size: 14px; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
+.labor-badge { font-size: 8px; font-weight: 700; letter-spacing: .04em; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 3px; padding: 1px 5px; line-height: 1.5; }
+.labor-district { font-size: 10px; color: var(--muted); }
+.labor-address { font-size: 11px; color: var(--text-secondary); line-height: 1.7; margin-top: 4px; overflow-wrap: anywhere; }
+.labor-office-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 10px; color: var(--muted); }
+.labor-office-meta a { display: inline-flex; align-items: center; gap: 4px; color: var(--text-secondary); }
+.labor-office-meta a:hover { color: var(--accent); }
+.labor-no-phone { color: var(--faint); }
+.labor-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 13px; margin-top: 10px; border: 1px solid var(--line); border-radius: var(--control-radius, 12px); font-size: 11px; color: var(--text-secondary); background: var(--surface); }
+.labor-more:hover { border-color: var(--line-strong); }
+.labor-support { margin-top: 40px; }
+.labor-support h2 { font-size: 15px; font-weight: 700; margin: 26px 0 8px; }
+.labor-support h2:first-child { margin-top: 0; }
+.labor-support > p { font-size: 11px; color: var(--muted); line-height: 1.8; margin-bottom: 12px; word-break: keep-all; }
+.labor-support > p a { color: var(--text-secondary); font-weight: 600; }
+.labor-centers { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.labor-centers article { border: 1px solid var(--line); border-radius: var(--control-radius, 12px); padding: 14px 15px; background: var(--surface); }
+.labor-centers h3 { font-size: 12px; font-weight: 650; line-height: 1.5; }
+.labor-centers p { font-size: 10px; color: var(--text-secondary); line-height: 1.7; margin-top: 4px; }
+.labor-center-covers { color: var(--muted) !important; }
+.labor-centers a { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 600; color: var(--accent); }
+.labor-sites { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.labor-sites li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.labor-sites a { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ink); }
+.labor-sites a:hover { color: var(--accent); }
+.labor-official { font-size: 8px; font-weight: 700; color: var(--on-accent); background: var(--accent); border-radius: 3px; padding: 1px 5px; letter-spacing: .04em; }
+.labor-sites p { font-size: 10px; color: var(--muted); line-height: 1.7; margin-top: 3px; word-break: keep-all; }
+.labor-cautions { list-style: none; margin: 0; padding: 14px 16px; display: grid; gap: 8px; background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--control-radius, 12px); }
+.labor-cautions li { display: flex; gap: 8px; align-items: flex-start; font-size: 11px; color: var(--text-secondary); line-height: 1.75; word-break: keep-all; }
+.labor-cautions svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
+@media (max-width: 520px) {
+  .labor-intro { font-size: 10px; }
+  .labor-controls select { max-width: 100%; flex: 1; }
+  .labor-search { min-width: 100%; }
+  .labor-office-head h3 { font-size: 13px; }
+  .labor-centers { grid-template-columns: 1fr; }
+}

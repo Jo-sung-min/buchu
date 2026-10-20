@@ -21,6 +21,7 @@ import "./topic-layout.css";
 import "./home.css";
 import "./community-posts.css";
 import "./programs.css";
+import "./labor.css";
 import "./adsense.css";
 
 export const metadata: Metadata = {
