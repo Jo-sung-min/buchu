@@ -24,7 +24,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:community-post-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1", "buchu.catalog-resource=classpath:programs-test.json"})
+@SpringBootTest(properties = {"spring.datasource.url=jdbc:h2:mem:community-post-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1", "buchu.catalog-resource=classpath:programs-test.json",
+        "STORAGE_PROVIDER=local", "STORAGE_LOCAL_DIR=build/test-uploads/community"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
@@ -140,6 +141,97 @@ class CommunityPostApiTest {
         mvc.perform(delete("/api/admin/posts/{id}", id).with(user("admin").roles("ADMIN"))).andExpect(status().isForbidden());
         mvc.perform(delete("/api/admin/posts/{id}", id).with(user("admin").roles("ADMIN")).with(csrf())).andExpect(status().isNoContent());
         mvc.perform(delete("/api/admin/posts/{id}", id).with(user("admin").roles("ADMIN")).with(csrf())).andExpect(status().isNotFound());
+    }
+
+    @Test void photosAreUploadedThroughThePresignedContractShownEverywhereAndRemovedWithThePost() throws Exception {
+        JsonNode first = uploadPhoto("png"), second = uploadPhoto("gif");
+        assertThat(jdbc.queryForObject("SELECT scope FROM upload_assets WHERE id = ?", String.class, first.path("uploadId").asText())).isEqualTo("COMMUNITY");
+        // Nothing is public before the photo is attached to a post.
+        mvc.perform(get("/api/media/{id}", first.path("uploadId").asText())).andExpect(status().isNotFound());
+        ObjectNode input = validInput("FREE", "사진 있는 글");
+        input.set("images", mapper.createArrayNode().add(imageRef(first)).add(imageRef(second)));
+        JsonNode created = mapper.readTree(postInput(input).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.post.images", hasSize(2)))
+                .andExpect(jsonPath("$.post.images[0].id").value(first.path("uploadId").asText()))
+                .andExpect(jsonPath("$.post.images[0].url").value("/api/media/" + first.path("uploadId").asText()))
+                .andReturn().getResponse().getContentAsString());
+        String id = created.path("post").path("id").asText();
+        mvc.perform(get("/api/media/{id}", first.path("uploadId").asText())).andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+        mvc.perform(get("/api/media/{id}", second.path("uploadId").asText())).andExpect(status().isOk()).andExpect(content().contentType("image/gif"));
+        mvc.perform(get("/api/posts/{id}", id)).andExpect(jsonPath("$.images", hasSize(2))).andExpect(jsonPath("$.images[1].id").value(second.path("uploadId").asText()));
+        mvc.perform(get("/api/posts")).andExpect(jsonPath("$.items[0].images", hasSize(2)));
+        mvc.perform(get("/api/posts/home")).andExpect(jsonPath("$.latest[0].images", hasSize(2))).andExpect(jsonPath("$.byCategory.FREE[0].images[0].url").value("/api/media/" + first.path("uploadId").asText()));
+        create("FREE", "사진 없는 글");
+        mvc.perform(get("/api/posts")).andExpect(jsonPath("$.items[0].images", hasSize(0)));
+        // An attached photo cannot be attached again by another post, even with its secret.
+        ObjectNode reuse = validInput("TIP", "남의 사진 재사용");
+        reuse.set("images", mapper.createArrayNode().add(imageRef(first)));
+        postInput(reuse).andExpect(status().isBadRequest());
+        // Nor can it be discarded on its own once attached; it goes with the post.
+        mvc.perform(delete("/api/posts/uploads/{id}", first.path("uploadId").asText()).with(csrf()).header("X-Upload-Token", first.path("uploadToken").asText())).andExpect(status().isConflict());
+        mvc.perform(delete("/api/posts/{id}", id).with(csrf()).header("X-Post-Token", created.path("deleteToken").asText())).andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM upload_assets WHERE id IN (?, ?)", Integer.class, first.path("uploadId").asText(), second.path("uploadId").asText())).isZero();
+        mvc.perform(get("/api/media/{id}", first.path("uploadId").asText())).andExpect(status().isNotFound());
+    }
+
+    @Test void rejectsPhotosThatAreNotFinishedNotOwnedOrTooMany() throws Exception {
+        JsonNode pending = presign("png");
+        ObjectNode notFinished = validInput("FREE", "업로드 안 끝남");
+        notFinished.set("images", mapper.createArrayNode().add(imageRef(pending)));
+        postInput(notFinished).andExpect(status().isBadRequest());
+        JsonNode done = uploadPhoto("png");
+        ObjectNode wrongSecret = validInput("FREE", "비밀값 틀림");
+        wrongSecret.set("images", mapper.createArrayNode().add(mapper.createObjectNode().put("uploadId", done.path("uploadId").asText()).put("token", "x".repeat(43))));
+        postInput(wrongSecret).andExpect(status().isNotFound());
+        ObjectNode duplicated = validInput("FREE", "같은 사진 두 번");
+        duplicated.set("images", mapper.createArrayNode().add(imageRef(done)).add(imageRef(done)));
+        postInput(duplicated).andExpect(status().isBadRequest());
+        ObjectNode tooMany = validInput("FREE", "사진 여섯 장");
+        var many = mapper.createArrayNode();
+        for (int index = 0; index < 6; index++) many.add(imageRef(uploadPhoto("png")));
+        tooMany.set("images", many);
+        postInput(tooMany).andExpect(status().isBadRequest());
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM community_posts", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM upload_assets WHERE published", Integer.class)).isZero();
+        // A photo removed from the draft is discarded with its secret; without the secret nothing happens.
+        JsonNode discarded = uploadPhoto("png");
+        mvc.perform(delete("/api/posts/uploads/{id}", discarded.path("uploadId").asText()).with(csrf())).andExpect(status().isNotFound());
+        mvc.perform(delete("/api/posts/uploads/{id}", discarded.path("uploadId").asText()).with(csrf()).header("X-Upload-Token", discarded.path("uploadToken").asText())).andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM upload_assets WHERE id = ?", Integer.class, discarded.path("uploadId").asText())).isZero();
+        // Only image types pass presign, the complete step needs the secret, and presign itself needs CSRF.
+        mvc.perform(post("/api/posts/uploads/presign").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fileName\":\"a.svg\",\"contentType\":\"image/svg+xml\",\"size\":10}")).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/posts/uploads/{id}/complete", done.path("uploadId").asText()).with(csrf())).andExpect(status().isNotFound());
+        mvc.perform(post("/api/posts/uploads/presign").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fileName\":\"a.png\",\"contentType\":\"image/png\",\"size\":10}")).andExpect(status().isForbidden());
+    }
+
+    private static final byte[] PNG = java.util.Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aY9sAAAAASUVORK5CYII=");
+    private static final byte[] GIF = java.util.Base64.getDecoder().decode("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+
+    private JsonNode presign(String kind) throws Exception {
+        byte[] bytes = kind.equals("gif") ? GIF : PNG;
+        return mapper.readTree(mvc.perform(post("/api/posts/uploads/presign").with(csrf())
+                .with(request -> { request.setRemoteAddr(UUID.randomUUID().toString()); return request; })
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(mapper.createObjectNode().put("fileName", "photo." + kind).put("contentType", "image/" + kind).put("size", bytes.length))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.uploadToken").isNotEmpty()).andReturn().getResponse().getContentAsString());
+    }
+
+    /** The browser's three steps: presign, PUT the bytes to the signed address, then confirm. Returns the presign body (upload id + secret). */
+    private JsonNode uploadPhoto(String kind) throws Exception {
+        byte[] bytes = kind.equals("gif") ? GIF : PNG;
+        JsonNode signed = presign(kind);
+        // The signed PUT is the one call exempt from CSRF; the capability lives in its URL, as in the browser.
+        String uploadUrl = signed.path("uploadUrl").asText();
+        mvc.perform(put(uploadUrl).servletPath(uploadUrl.substring(0, uploadUrl.indexOf('?'))).contentType("image/" + kind).content(bytes)).andExpect(status().isNoContent());
+        mvc.perform(post("/api/posts/uploads/{id}/complete", signed.path("uploadId").asText()).with(csrf()).header("X-Upload-Token", signed.path("uploadToken").asText()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.uploadId").value(signed.path("uploadId").asText()));
+        return signed;
+    }
+
+    private ObjectNode imageRef(JsonNode signed) {
+        return mapper.createObjectNode().put("uploadId", signed.path("uploadId").asText()).put("token", signed.path("uploadToken").asText());
     }
 
     @Test void limitsRapidAnonymousPosting() throws Exception {

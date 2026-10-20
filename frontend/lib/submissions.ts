@@ -60,15 +60,30 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * One CSRF lookup at a time. The token lives in the session, and two lookups racing before the session cookie exists
+ * would each start a session of their own, so one of the two requests that follow would carry the wrong token.
+ */
+let csrfLookup: Promise<{ token: string; headerName: string }> | null = null;
+function csrfToken() {
+  if (!csrfLookup) {
+    csrfLookup = (async () => {
+      const response = await fetch("/api/auth/csrf", { credentials: "same-origin", cache: "no-store" });
+      if (!response.ok) throw new ApiError("보안 정보를 가져오지 못했어요. 잠시 후 다시 시도해 주세요.", response.status);
+      return await response.json() as { token: string; headerName: string };
+    })();
+    csrfLookup.finally(() => { csrfLookup = null; }).catch(() => undefined);
+  }
+  return csrfLookup;
+}
+
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && typeof init.body === "string" && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   const method = (init.method ?? "GET").toUpperCase();
   try {
     if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
-      const csrfResponse = await fetch("/api/auth/csrf", { credentials: "same-origin", cache: "no-store" });
-      if (!csrfResponse.ok) throw new ApiError("보안 정보를 가져오지 못했어요. 잠시 후 다시 시도해 주세요.", csrfResponse.status);
-      const csrf = await csrfResponse.json() as { token: string; headerName: string };
+      const csrf = await csrfToken();
       headers.set(csrf.headerName, csrf.token);
     }
     const response = await fetch(path, { ...init, headers, credentials: "same-origin", cache: "no-store" });

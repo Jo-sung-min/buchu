@@ -19,16 +19,24 @@ export type PostSort = "latest" | "popular" | "comments";
 
 export type AuthorType = "MEMBER" | "ANON";
 type Authored = { nickname: string; authorType: AuthorType; ipHint: string | null; mine: boolean };
+/** A photo attached to a post: the upload id and the address it is served from (CDN or `/api/media/...`). */
+export type PostImage = { id: string; url: string };
 export type Post = Authored & {
   id: string;
   category: PostCategory;
   title: string;
   content: string;
+  images: PostImage[];
   viewCount: number;
   commentCount: number;
   createdAt: string;
 };
 export type PostComment = Authored & { id: string; postId: string; content: string; createdAt: string };
+/** An uploaded photo the form has not yet attached: the upload id plus the secret presign handed out. */
+export type PostImageRef = { uploadId: string; token: string };
+export const postImageLimit = 5;
+export const postImageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+export const postImageMaxBytes = 8 * 1024 * 1024;
 
 /** DC-style byline: members show their nickname, visitors show "ㅇㅇ(118.235)". */
 export function authorLabel(item: Pick<Authored, "nickname" | "authorType" | "ipHint">) {
@@ -38,7 +46,7 @@ export function authorInitial(item: Pick<Authored, "nickname" | "authorType">) {
   return item.authorType === "MEMBER" ? item.nickname.trim().charAt(0) || "회" : "ㅇ";
 }
 export type PostPage = { items: Post[]; total: number; page: number; size: number };
-export type PostInput = { category: PostCategory; title: string; content: string };
+export type PostInput = { category: PostCategory; title: string; content: string; images: PostImageRef[] };
 
 const storageKey = "buchu:post-delete-tokens:v1";
 const sessionTokens: Record<string, string> = {};
@@ -109,6 +117,36 @@ export function fetchComments(id: string, signal?: AbortSignal) {
 
 export function writePost(input: PostInput) {
   return api<{ post: Post; deleteToken: string }>("/api/posts", { method: "POST", body: JSON.stringify(input) });
+}
+
+/**
+ * Uploads one photo for a post the same way the submission form does: ask the API for a signed PUT address, send the
+ * file there directly (S3 or the local store), then confirm so the server verifies the bytes. Progress is the PUT's.
+ */
+export async function uploadPostImage(file: File, onProgress?: (fraction: number) => void, signal?: AbortSignal): Promise<PostImageRef> {
+  if (!postImageTypes.includes(file.type)) throw new Error("JPG, PNG, WebP, GIF 사진만 올릴 수 있어요.");
+  if (file.size > postImageMaxBytes || file.size === 0) throw new Error("사진은 0바이트보다 크고 8MB 이하여야 해요.");
+  const signed = await api<{ uploadId: string; uploadUrl: string; method: "PUT"; headers: Record<string, string>; uploadToken: string }>("/api/posts/uploads/presign", {
+    method: "POST", body: JSON.stringify({ fileName: file.name, contentType: file.type, size: file.size }), signal,
+  });
+  await new Promise<void>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open(signed.method, signed.uploadUrl);
+    Object.entries(signed.headers).forEach(([name, value]) => request.setRequestHeader(name, value));
+    request.upload.onprogress = event => { if (event.lengthComputable) onProgress?.(event.loaded / event.total); };
+    request.onload = () => request.status >= 200 && request.status < 300 ? resolve() : reject(new Error("사진을 저장하지 못했어요. 같은 파일을 다시 올려 주세요."));
+    request.onerror = () => reject(new Error("사진 전송에 실패했어요. 연결 상태를 확인한 뒤 다시 올려 주세요."));
+    request.onabort = () => reject(new DOMException("업로드를 취소했어요.", "AbortError"));
+    signal?.addEventListener("abort", () => request.abort(), { once: true });
+    request.send(file);
+  });
+  await api(`/api/posts/uploads/${encodeURIComponent(signed.uploadId)}/complete`, { method: "POST", headers: { "X-Upload-Token": signed.uploadToken }, signal });
+  return { uploadId: signed.uploadId, token: signed.uploadToken };
+}
+
+/** Drops a photo that was uploaded for a post but taken out of the draft before posting. Best effort: the server also tolerates leftovers. */
+export function discardPostImage(ref: PostImageRef): Promise<void> {
+  return api<void>(`/api/posts/uploads/${encodeURIComponent(ref.uploadId)}`, { method: "DELETE", headers: { "X-Upload-Token": ref.token } }).catch(() => undefined);
 }
 
 export function writeComment(postId: string, content: string) {

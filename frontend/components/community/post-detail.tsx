@@ -98,6 +98,9 @@ export function PostDetail({ id }: { id: string }) {
       <div className="post-detail-meta"><span className={`home-row-avatar-anon${post.authorType === "MEMBER" ? " is-member" : ""}`} aria-hidden="true">{authorInitial(post)}</span><span className={`post-author${post.authorType === "MEMBER" ? " is-member" : ""}`}>{authorLabel(post)}{post.authorType === "MEMBER" && <small>회원</small>}</span><span className="review-meta-dot" aria-hidden="true">·</span><time dateTime={post.createdAt} title={postDateTime(post.createdAt)}>{postTime(post.createdAt)}</time><span className="review-meta-dot" aria-hidden="true">·</span><span><Icon name="eye" size={13} /> {post.viewCount}</span><span><Icon name="comment" size={13} /> {post.commentCount}</span></div>
     </header>
     <div className="post-detail-body">{post.content}</div>
+    {post.images?.length > 0 && <div className="post-detail-images" role="group" aria-label={`첨부 사진 ${post.images.length}장`}>
+      {post.images.map((image, index) => <a key={image.id} href={image.url} target="_blank" rel="noopener noreferrer"><img src={image.url} alt={`첨부 사진 ${index + 1}`} loading={index === 0 ? "eager" : "lazy"} /></a>)}
+    </div>}
     <AdUnit kind="article" />
     <div className="post-detail-actions"><Link href="/community" className="review-button review-button-quiet">목록</Link><DeleteControl label="글" owned={Boolean(ownToken) || post.mine} busy={busy} onDelete={removePost} /></div>
     <section className="post-comments" aria-labelledby="comments-title">

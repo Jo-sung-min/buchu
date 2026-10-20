@@ -49,7 +49,8 @@ class UploadServiceTest {
         var source = new DriverManagerDataSource("jdbc:h2:mem:uploads-" + UUID.randomUUID()
                 + ";MODE=PostgreSQL;DB_CLOSE_DELAY=-1", "sa", "");
         jdbc = new JdbcTemplate(source);
-        new ResourceDatabasePopulator(new ClassPathResource("db/migration/V2__upload_assets.sql")).execute(source);
+        new ResourceDatabasePopulator(new ClassPathResource("db/migration/V2__upload_assets.sql"),
+                new ClassPathResource("db/migration/V13__upload_asset_scope.sql")).execute(source);
         jdbc.execute("CREATE TABLE submissions (id VARCHAR(36) PRIMARY KEY, status VARCHAR(16) NOT NULL)");
         jdbc.update("INSERT INTO submissions (id, status) VALUES (?, 'DRAFT')", SUBMISSION);
         access = mock(SubmissionAccessService.class);

@@ -116,14 +116,16 @@ docker compose --env-file backend/.env up -d db
 
 ## 이미지: 로컬에서 S3/CDN으로 전환
 
-기본 `STORAGE_PROVIDER=local`에서는 같은 프리사인 업로드 흐름을 로컬 저장소로 검증할 수 있습니다. 파일은 기본 `backend/uploads`에 저장합니다.
+기본 `STORAGE_PROVIDER=local`에서는 같은 프리사인 업로드 흐름을 로컬 저장소로 검증할 수 있습니다. 파일은 기본 `backend/uploads`에 저장합니다. 기업 신청의 대표 이미지와 소통 글의 사진이 모두 이 계약을 씁니다.
 
 ```text
 업로드 URL 발급 → 브라우저 PUT → 완료 확인 및 이미지 검증
-→ 비공개 고정 파일 복사 → 관리자 승인 → 공개 이미지
+→ 비공개 고정 파일 복사 → 관리자 승인(신청) 또는 글 등록(소통) → 공개 이미지
 ```
 
-JPEG·PNG·WebP, 파일당 최대 8MiB, 신청당 최대 20개 이미지를 지원합니다. 업로드 링크는 10분간 유효합니다. 원본 파일명으로 저장 경로를 만들지 않으며, 크기·MIME·실제 파일 시그니처를 확인합니다. 완료된 이미지와 승인 이미지는 별도 키로 복사하므로 과거 업로드 링크로 게시된 이미지를 덮어쓸 수 없습니다.
+JPEG·PNG·WebP·GIF, 파일당 최대 8MiB, 신청당 최대 20개·소통 글당 최대 5장의 이미지를 지원합니다. 업로드 링크는 10분간 유효합니다. 원본 파일명으로 저장 경로를 만들지 않으며, 크기·MIME·실제 파일 시그니처를 확인합니다. 완료된 이미지와 승인 이미지는 별도 키로 복사하므로 과거 업로드 링크로 게시된 이미지를 덮어쓸 수 없습니다.
+
+소통 글 사진은 신청서가 없으므로 `POST /api/posts/uploads/presign`이 업로드 ID와 함께 1회용 비밀값(`uploadToken`)을 돌려주고, 브라우저는 완료 확인(`X-Upload-Token`)과 글 등록(`images: [{uploadId, token}]`)에 그 값을 씁니다. 글이 저장될 때 사진이 공개되며, 한 번 글에 붙은 사진은 다른 글에 다시 붙일 수 없습니다. 글을 지우면 사진 레코드와 파일도 함께 지웁니다. 발급은 IP당 분당 30회로 제한합니다.
 
 S3 연결 시 `backend/.env`를 변경합니다.
 
@@ -140,7 +142,18 @@ STORAGE_ENDPOINT=
 STORAGE_PATH_STYLE=false
 ```
 
-프리사인 URL은 서버에서 생성하고 브라우저가 S3에 직접 PUT합니다. API는 완료 시 S3 객체를 확인합니다. `CDN_BASE_URL`은 버킷 루트에 대응하는 주소이며, 공개 이미지 URL 뒤에 `published/...` 경로가 붙습니다. CDN을 비워 두면 백엔드 이미지 경로로 제공합니다.
+프리사인 URL은 서버에서 생성하고 브라우저가 S3에 직접 PUT합니다. API는 완료 시 S3 객체를 확인합니다. `CDN_BASE_URL`은 버킷 루트에 대응하는 주소이며, 공개 이미지 URL 뒤에 `published/...` 경로가 붙습니다(소통 글 사진은 `published/community/<글 id>/...`). CDN을 비워 두면 백엔드 이미지 경로(`/api/media/{uploadId}`)로 제공합니다. 소통 글 사진에 별도 환경변수는 없으며 위 `STORAGE_*`·`CDN_BASE_URL` 값만 채우면 됩니다.
+
+| 변수 | 의미 | 기본값 |
+| --- | --- | --- |
+| `STORAGE_PROVIDER` | `local`(개발, 파일 저장) 또는 `s3` | `local` |
+| `STORAGE_LOCAL_DIR` | `local`일 때 파일을 둘 디렉터리 | `./uploads` |
+| `STORAGE_BUCKET` | `s3`일 때 버킷 이름(필수) | 비어 있음 |
+| `STORAGE_REGION` | 버킷 리전 | `ap-northeast-2` |
+| `STORAGE_ENDPOINT` | S3 호환 저장소 주소(AWS S3면 비움) | 비어 있음 |
+| `STORAGE_PATH_STYLE` | S3 호환 저장소가 경로형 주소를 요구하면 `true` | `false` |
+| `CDN_BASE_URL` | 공개 이미지를 내보낼 CDN 주소(버킷 루트 대응), 비우면 `/api/media` 경유 | 비어 있음 |
+| `AWS_ACCESS_KEY_ID` · `AWS_SECRET_ACCESS_KEY` · `AWS_SESSION_TOKEN` | 로컬에서 S3를 쓸 때의 자격증명, 배포 환경은 IAM 역할 권장 | 비어 있음 |
 
 - S3 버킷은 비공개로 유지합니다. CDN의 원본 읽기 권한은 **`published/*`에만** 부여하세요. `staging/*`, `private/*`는 CDN에 공개하지 않습니다.
 - 백엔드 IAM 역할은 해당 버킷의 `staging/*`, `private/*`, `published/*` 객체 읽기·쓰기·삭제 권한이 필요합니다. SSE-KMS를 사용하면 해당 키 권한도 준비합니다.
@@ -158,6 +171,9 @@ S3/CDN 자격증명과 리소스는 포함되어 있지 않습니다. 연결 후
 - `V3__community_boards_and_anonymous_reviews.sql`: 신청 게시판(`MARKETER`·`HELP`), 익명 평가·별점·별칭·삭제 키 해시
 - `V4__courses.sql`: 강의, 커리큘럼, 판매 조건과 구매 불가 기획 예시 6개
 - `V5__course_orders.sql`: 주문, 결제 확인, 수강 기한과 학습 진도
+- `V6`~`V12`: 소통 글·댓글, 주제, 광고, 회원과 글쓴이, 삽입 순번
+- `V13__upload_asset_scope.sql`: 업로드가 신청서(`SUBMISSION`)인지 소통 글(`COMMUNITY`)인지 구분하는 `scope`
+- `V14__community_post_images.sql`: 소통 글에 붙은 사진 목록(`images`, JSON 배열, 최대 5장)
 
 JPA 자동 스키마 생성은 사용하지 않습니다. 적용된 마이그레이션을 수정하지 말고 다음 버전 파일을 추가하세요. 기존 추천 4개는 `data/programs.json`에서 관리하며, 승인된 기업 신청과 함께 공개 API에 합쳐집니다. 게시판 값이 없던 기존 데이터는 `MARKETER`로 처리합니다. 백엔드가 꺼져 있으면 초기 추천 목록만 대체 표시하며, 기업 신청·익명 평가·관리 기능은 백엔드와 DB가 실행되어 있어야 합니다.
 
@@ -176,6 +192,10 @@ JPA 자동 스키마 생성은 사용하지 않습니다. 적용된 마이그레
 | `POST /api/submissions/{id}/submit` | 심사 요청 |
 | `POST /api/submissions/{id}/uploads/presign` | 이미지 PUT URL 발급 |
 | `POST /api/submissions/{id}/uploads/{uploadId}/complete` | 업로드 검증·완료 |
+| `POST /api/posts` | 소통 글 작성, `{category, title, content, images?: [{uploadId, token}]}` → `{post, deleteToken}`; 글 응답의 `images: [{id, url}]` |
+| `POST /api/posts/uploads/presign` | 소통 글 사진 PUT URL 발급, `uploadToken` 포함 |
+| `POST /api/posts/uploads/{uploadId}/complete` | 소통 글 사진 검증·완료, `X-Upload-Token` 필요 |
+| `DELETE /api/posts/uploads/{uploadId}` | 글에 붙이기 전에 뺀 사진 삭제, `X-Upload-Token` 필요 |
 | `POST /api/admin/login` · `POST /api/admin/logout` | 관리자 세션 |
 | `GET /api/admin/submissions` · `GET /api/admin/submissions/{id}` | 상태·검색·페이지별 목록과 상세 |
 | `POST /api/admin/submissions/{id}/review` | 승인·거절과 심사 의견 |

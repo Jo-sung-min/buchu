@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 final class ImageFiles {
     static final long MAX_SIZE = 8 * 1024 * 1024;
     static final Map<String, String> EXTENSIONS = Map.of(
-            "image/jpeg", "jpg", "image/png", "png", "image/webp", "webp");
+            "image/jpeg", "jpg", "image/png", "png", "image/webp", "webp", "image/gif", "gif");
 
     private ImageFiles() {}
 
@@ -23,6 +23,8 @@ final class ImageFiles {
             case "image/webp" -> bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I'
                     && bytes[2] == 'F' && bytes[3] == 'F' && bytes[8] == 'W'
                     && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P';
+            case "image/gif" -> bytes.length >= 6 && bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F'
+                    && bytes[3] == '8' && (bytes[4] == '7' || bytes[4] == '9') && bytes[5] == 'a';
             default -> false;
         };
         if (!valid) {

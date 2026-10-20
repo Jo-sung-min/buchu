@@ -1,8 +1,12 @@
 package kr.co.buchu.community;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.buchu.member.MemberService;
 import kr.co.buchu.security.ClientAddress;
+import kr.co.buchu.storage.UploadService;
 import kr.co.buchu.submission.SubmissionAccessService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -32,11 +36,14 @@ public class CommunityPostService {
     /** Display order of topics on the front page. */
     public static final List<String> CATEGORY_ORDER = List.of("FREE", "INCOME", "QUESTION", "TIP", "STOCK", "REALTY", "WORK", "LOVE", "HEALTH", "STORY");
     public static final Set<String> CATEGORIES = Set.copyOf(CATEGORY_ORDER);
-    private static final String POST_COLUMNS = "id, category, title, content, nickname, view_count, comment_count, created_at, author_id, author_type, ip_hint";
+    private static final String POST_COLUMNS = "id, category, title, content, images, nickname, view_count, comment_count, created_at, author_id, author_type, ip_hint";
+    private static final TypeReference<List<StoredImage>> STORED_IMAGES = new TypeReference<>() {};
     private final JdbcTemplate jdbc;
+    private final UploadService uploads;
+    private final ObjectMapper json;
     private final SecureRandom random = new SecureRandom();
     private final RowMapper<Post> postMapper = (rs, index) -> new Post(rs.getString("id"), rs.getString("category"), rs.getString("title"),
-            rs.getString("content"), rs.getString("nickname"), rs.getInt("view_count"), rs.getInt("comment_count"), rs.getTimestamp("created_at").toInstant().toString(),
+            rs.getString("content"), images(rs.getString("images")), rs.getString("nickname"), rs.getInt("view_count"), rs.getInt("comment_count"), rs.getTimestamp("created_at").toInstant().toString(),
             rs.getString("author_id"), rs.getString("author_type"), rs.getString("ip_hint"), false);
     private final RowMapper<Comment> commentMapper = (rs, index) -> new Comment(rs.getString("id"), rs.getString("post_id"), rs.getString("content"),
             rs.getString("nickname"), rs.getTimestamp("created_at").toInstant().toString(), rs.getString("author_id"), rs.getString("author_type"), rs.getString("ip_hint"), false);
@@ -46,8 +53,11 @@ public class CommunityPostService {
     private volatile HomeFeed cachedHome;
     private volatile long cachedHomeAt;
 
-    public CommunityPostService(JdbcTemplate jdbc, @Value("${buchu.community.home-cache-seconds:15}") long homeCacheSeconds) {
+    public CommunityPostService(JdbcTemplate jdbc, UploadService uploads, ObjectMapper json,
+                                @Value("${buchu.community.home-cache-seconds:15}") long homeCacheSeconds) {
         this.jdbc = jdbc;
+        this.uploads = uploads;
+        this.json = json;
         this.homeCacheMillis = homeCacheSeconds * 1000;
     }
 
@@ -60,10 +70,29 @@ public class CommunityPostService {
         String token = author.member() ? null : token();
         String id = UUID.randomUUID().toString();
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        jdbc.update("INSERT INTO community_posts (id, category, title, content, nickname, delete_token_hash, view_count, comment_count, created_at, author_id, author_type, ip_hint) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
-                id, input.category(), title, content, author.nickname(), SubmissionAccessService.hash(token == null ? UUID.randomUUID().toString() : token), now, author.id(), author.type(), author.ipHint());
+        // Photos were uploaded through the presigned contract beforehand; attaching makes them public and ties them to this post.
+        List<StoredImage> stored = uploads.attachCommunity(input.images() == null ? List.of() : input.images().stream()
+                .map(image -> new UploadService.ImageReference(image == null ? null : image.uploadId(), image == null ? null : image.token())).toList(), id)
+                .stream().map(image -> new StoredImage(image.id(), image.key())).toList();
+        jdbc.update("INSERT INTO community_posts (id, category, title, content, images, nickname, delete_token_hash, view_count, comment_count, created_at, author_id, author_type, ip_hint) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
+                id, input.category(), title, content, write(stored), author.nickname(), SubmissionAccessService.hash(token == null ? UUID.randomUUID().toString() : token), now, author.id(), author.type(), author.ipHint());
         forgetHome();
-        return new CreatedPost(new Post(id, input.category(), title, content, author.nickname(), 0, 0, now.toInstant().toString(), author.id(), author.type(), author.ipHint(), author.member()), token);
+        return new CreatedPost(new Post(id, input.category(), title, content, images(stored), author.nickname(), 0, 0, now.toInstant().toString(), author.id(), author.type(), author.ipHint(), author.member()), token);
+    }
+
+    private String write(List<StoredImage> images) {
+        try { return json.writeValueAsString(images); } catch (JsonProcessingException error) { throw new IllegalStateException(error); }
+    }
+
+    private List<StoredImage> stored(String raw) {
+        if (raw == null || raw.isBlank()) return List.of();
+        try { return json.readValue(raw, STORED_IMAGES); } catch (JsonProcessingException error) { throw new IllegalStateException(error); }
+    }
+
+    private List<PostImage> images(String raw) { return images(stored(raw)); }
+
+    private List<PostImage> images(List<StoredImage> stored) {
+        return stored.stream().map(image -> new PostImage(image.id(), uploads.publicUrl(image.id(), image.key()))).toList();
     }
 
     @Transactional(readOnly = true)
@@ -138,13 +167,17 @@ public class CommunityPostService {
     @Transactional
     public void deleteOwned(String id, String token, String viewerId) {
         if (!ownedByMember("community_posts", id, viewerId)) requireToken("community_posts", id, token);
-        jdbc.update("DELETE FROM community_posts WHERE id = ?", id);
-        forgetHome();
+        removePost(id);
     }
 
     @Transactional
-    public void deleteAdmin(String id) {
-        if (jdbc.update("DELETE FROM community_posts WHERE id = ?", id) == 0) throw notFound();
+    public void deleteAdmin(String id) { removePost(id); }
+
+    /** Comments go with the row (ON DELETE CASCADE); the photos are upload assets of their own and are discarded here. */
+    private void removePost(String id) {
+        List<String> images = jdbc.query("SELECT images FROM community_posts WHERE id = ?", (rs, index) -> rs.getString(1), id);
+        if (images.isEmpty() || jdbc.update("DELETE FROM community_posts WHERE id = ?", id) == 0) throw notFound();
+        uploads.discardCommunity(stored(images.getFirst()).stream().map(StoredImage::id).toList());
         forgetHome();
     }
 
@@ -223,14 +256,20 @@ public class CommunityPostService {
     private static ResponseStatusException invalid(String message) { return new ResponseStatusException(HttpStatus.BAD_REQUEST, message); }
     private static ResponseStatusException notFound() { return new ResponseStatusException(HttpStatus.NOT_FOUND, "글을 찾을 수 없거나 삭제 코드가 올바르지 않습니다."); }
 
-    public record PostInput(String category, String title, String content) {}
+    /** {@code images} are photos the browser already uploaded: each upload id with the secret presign handed out. */
+    public record PostInput(String category, String title, String content, List<ImageInput> images) {}
+    public record ImageInput(String uploadId, String token) {}
     public record CommentInput(String content) {}
     public record Author(String id, String type, String nickname, String ipHint) {
         public boolean member() { return "MEMBER".equals(type); }
     }
-    public record Post(String id, String category, String title, String content, String nickname, int viewCount, int commentCount, String createdAt,
+    /** A photo as readers see it: the upload id and the address it is served from (CDN when configured, else the API). */
+    public record PostImage(String id, String url) {}
+    /** What the images column holds; the key is kept so a CDN address can be formed without a lookup. */
+    public record StoredImage(String id, String key) {}
+    public record Post(String id, String category, String title, String content, List<PostImage> images, String nickname, int viewCount, int commentCount, String createdAt,
                        @JsonIgnore String authorId, String authorType, String ipHint, boolean mine) {
-        public Post seenBy(String viewerId) { return viewerId != null && "MEMBER".equals(authorType) && viewerId.equals(authorId) ? new Post(id, category, title, content, nickname, viewCount, commentCount, createdAt, authorId, authorType, ipHint, true) : this; }
+        public Post seenBy(String viewerId) { return viewerId != null && "MEMBER".equals(authorType) && viewerId.equals(authorId) ? new Post(id, category, title, content, images, nickname, viewCount, commentCount, createdAt, authorId, authorType, ipHint, true) : this; }
     }
     public record Comment(String id, String postId, String content, String nickname, String createdAt,
                           @JsonIgnore String authorId, String authorType, String ipHint, boolean mine) {

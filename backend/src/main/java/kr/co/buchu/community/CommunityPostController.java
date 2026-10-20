@@ -1,11 +1,15 @@
 package kr.co.buchu.community;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import kr.co.buchu.member.MemberAuthController;
 import kr.co.buchu.member.MemberService;
 import kr.co.buchu.security.ClientAddress;
 import kr.co.buchu.security.RequestRateLimiter;
+import kr.co.buchu.storage.UploadService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +23,10 @@ public class CommunityPostController {
     private final CommunityPostService posts;
     private final MemberService members;
     private final RequestRateLimiter limits;
+    private final UploadService uploads;
 
-    public CommunityPostController(CommunityPostService posts, MemberService members, RequestRateLimiter limits) {
-        this.posts = posts; this.members = members; this.limits = limits;
+    public CommunityPostController(CommunityPostService posts, MemberService members, RequestRateLimiter limits, UploadService uploads) {
+        this.posts = posts; this.members = members; this.limits = limits; this.uploads = uploads;
     }
 
     private MemberService.Member member(Authentication authentication) { return MemberAuthController.current(authentication, members).orElse(null); }
@@ -45,6 +50,24 @@ public class CommunityPostController {
         String address = ClientAddress.of(request);
         limits.check("community-posts", address, 5, 60_000);
         return posts.create(input, CommunityPostService.author(member(authentication), address));
+    }
+
+    /** Photo upload for a post, before the post exists: the same presigned PUT contract the submission form uses. */
+    @PostMapping("/posts/uploads/presign")
+    public ResponseEntity<UploadService.CommunityPresignResponse> presignImage(@Valid @RequestBody UploadService.PresignRequest input, HttpServletRequest request) {
+        limits.check("community-uploads", ClientAddress.of(request), 30, 60_000);
+        return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "private, no-store").body(uploads.presignCommunity(input));
+    }
+
+    @PostMapping("/posts/uploads/{uploadId}/complete")
+    public ResponseEntity<UploadService.CompleteResponse> completeImage(@PathVariable String uploadId, @RequestHeader(value = "X-Upload-Token", required = false) String token) {
+        return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "private, no-store").body(uploads.completeCommunity(uploadId, token));
+    }
+
+    @DeleteMapping("/posts/uploads/{uploadId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void discardImage(@PathVariable String uploadId, @RequestHeader(value = "X-Upload-Token", required = false) String token) {
+        uploads.discardCommunityOwned(uploadId, token);
     }
 
     @GetMapping("/posts/home")
