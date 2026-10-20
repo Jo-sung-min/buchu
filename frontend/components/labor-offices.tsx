@@ -48,7 +48,7 @@ export function LaborOffices() {
     <div className="labor-controls">
       <select aria-label="시군구 선택" value={district} onChange={event => setDistrict(event.target.value)}>
         <option value="all">{current?.name} 전체 ({(laborOnly ? current?.laborCount : current?.count)?.toLocaleString()})</option>
-        {current?.districts.map(item => <option key={item.name} value={item.name}>{item.name} ({(laborOnly ? item.laborCount : item.count).toLocaleString()})</option>)}
+        {current?.districts.filter(item => (laborOnly ? item.laborCount : item.count) > 0).map(item => <option key={item.name} value={item.name}>{item.name} ({(laborOnly ? item.laborCount : item.count).toLocaleString()})</option>)}
       </select>
       <label className="labor-toggle"><input type="checkbox" checked={laborOnly} onChange={event => setLaborOnly(event.target.checked)} /><span>인력사무소로 보이는 곳만</span></label>
       <div className="labor-search"><Icon name="search" size={15} /><input aria-label="사무소 이름·주소 검색" placeholder="이름·동네 검색" value={query} onChange={event => setQuery(event.target.value)} maxLength={40} />{query && <button aria-label="검색어 지우기" onClick={() => setQuery("")}><Icon name="close" size={14} /></button>}</div>

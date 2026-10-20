@@ -23,8 +23,10 @@ const SIDO = [
   ["제주특별자치도", "jeju", "제주"],
 ];
 const SIDO_ORDER = ["seoul", "gyeonggi", "incheon", "busan", "daegu", "gwangju-jeonnam", "daejeon", "ulsan", "sejong", "gangwon", "chungbuk", "chungnam", "jeonbuk", "gyeongbuk", "gyeongnam", "jeju"];
-/** 이름만으로 건설·일용 인력사무소로 보이는 곳. 간병·가사·헤드헌팅 같은 소개소와 구분해 기본 필터로 쓴다. */
-const LABOR_NAME = /인력|건설|용역|일용|노무|잡|워크|work|job|파워|맨파워|기공|토목|철근|비계|형틀|목수|조공/i;
+/** 이름만으로 건설·일용 인력사무소로 보이는 곳. 간병·가사·파출, 헤드헌팅·컨설팅 회사는 뺀다. 기본 필터로 쓴다. */
+const LABOR_NAME = /인력|건설|용역|일용|노무|인부|새벽|기공|토목|철근|비계|형틀|목수|조공|잡부/;
+const NOT_LABOR_NAME = /파출|가사|간병|요양|베이비|산후|돌봄|써치|서치|컨설팅|헤드헌|에이치알|HR|리크루트|리쿠르트|아웃소싱|선원|해외|유학|간호|병원|여성인력개발/i;
+const laborLike = name => LABOR_NAME.test(name) && !NOT_LABOR_NAME.test(name);
 
 function parseCsv(text) {
   const rows = []; let row = [], cell = "", quoted = false;
@@ -77,7 +79,7 @@ for (const r of rows.slice(1)) {
   // 시군구는 둘째 어절. "고양시일산구"처럼 붙어 있으면 앞의 시까지만, 도로명이 바로 오면 "기타"로 둔다.
   const district = sido[1] === "sejong" ? "세종시" : ((tokens[1] || "").match(/^(.+?[시군구])(?=[^시군구]|$)/)?.[1] || "기타");
   if (r[C.updated] > latest) latest = r[C.updated];
-  bySido.get(sido[1]).offices.push({ n: name, a: address, t: phone(r[C.tel]), d: (r[C.licensed] || "").trim().slice(0, 10), g: district, l: LABOR_NAME.test(name) });
+  bySido.get(sido[1]).offices.push({ n: name, a: address, t: phone(r[C.tel]), d: (r[C.licensed] || "").trim().slice(0, 10), g: district, l: laborLike(name) });
 }
 
 mkdirSync(outDir, { recursive: true });
