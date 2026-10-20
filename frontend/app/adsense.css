@@ -1,0 +1,21 @@
+/* AdSense units: in-feed strips between post rows (Blind's rhythm), a sidebar rectangle and a post-body unit. Heights are reserved so ads never shift content. */
+.adsense{display:block;min-width:0;margin:30px 0;padding:12px 0 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.adsense-label{display:block;margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--faint)}
+.adsense ins.adsbygoogle{display:block;width:100%;min-width:0}
+.adsense-feed ins.adsbygoogle{min-height:110px}
+.adsense-article ins.adsbygoogle{min-height:250px}
+.adsense-rect{margin:18px 0 0;padding:0;border:0}
+.adsense-rect ins.adsbygoogle{max-width:300px;min-height:250px;margin:0 auto}
+.adsense-rect .adsense-label{text-align:left;margin:0 0 8px 2px}
+li.adsense{list-style:none;margin:6px 0;padding:10px 0 8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+li.adsense+.home-row{border-top:0}
+.home-topics-ad{grid-column:1/-1;margin:4px 0}
+.post-detail .adsense-article{margin:0 0 4px;padding:14px 0 12px;border-top:1px solid var(--line);border-bottom:0}
+.post-detail .adsense-article+.post-detail-actions{border-top:1px solid var(--line)}
+.post-detail-end{margin:34px 0 0}
+.adsense-preview{display:grid;place-items:center;gap:5px;min-height:inherit;padding:22px 16px;border:1px dashed var(--line-strong);border-radius:10px;background:var(--surface-soft);color:var(--muted);font-size:12px;line-height:1.6;word-break:keep-all}
+.adsense-feed .adsense-preview{min-height:110px}
+.adsense-article .adsense-preview{min-height:250px}
+.adsense-rect .adsense-preview{max-width:300px;min-height:250px;margin:0 auto}
+.adsense-preview strong{font-size:13px;color:var(--text-secondary)}
+@media(max-width:520px){.adsense{margin:22px 0}.adsense-feed ins.adsbygoogle,.adsense-feed .adsense-preview{min-height:100px}}

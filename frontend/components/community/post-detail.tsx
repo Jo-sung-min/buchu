@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { announcePostChange, authorInitial, authorLabel, deleteComment, deletePost, fetchComments, fetchPost, getPostToken, postCategoryLabels, postDateTime, postTime, rememberPostToken, writeComment, type Post, type PostComment } from "@/lib/posts";
 import { useAuth } from "../auth-provider";
 import { Icon } from "../icons";
+import { AdUnit } from "../adsense/ad-unit";
 
 function DeleteControl({ label, owned, busy, onDelete }: { label: string; owned: boolean; busy: boolean; onDelete: (token?: string) => Promise<void> }) {
   const [open, setOpen] = useState(false);
@@ -97,6 +98,7 @@ export function PostDetail({ id }: { id: string }) {
       <div className="post-detail-meta"><span className={`home-row-avatar-anon${post.authorType === "MEMBER" ? " is-member" : ""}`} aria-hidden="true">{authorInitial(post)}</span><span className={`post-author${post.authorType === "MEMBER" ? " is-member" : ""}`}>{authorLabel(post)}{post.authorType === "MEMBER" && <small>회원</small>}</span><span className="review-meta-dot" aria-hidden="true">·</span><time dateTime={post.createdAt} title={postDateTime(post.createdAt)}>{postTime(post.createdAt)}</time><span className="review-meta-dot" aria-hidden="true">·</span><span><Icon name="eye" size={13} /> {post.viewCount}</span><span><Icon name="comment" size={13} /> {post.commentCount}</span></div>
     </header>
     <div className="post-detail-body">{post.content}</div>
+    <AdUnit kind="article" />
     <div className="post-detail-actions"><Link href="/community" className="review-button review-button-quiet">목록</Link><DeleteControl label="글" owned={Boolean(ownToken) || post.mine} busy={busy} onDelete={removePost} /></div>
     <section className="post-comments" aria-labelledby="comments-title">
       <h2 id="comments-title">댓글 <span>{post.commentCount}</span></h2>
@@ -111,5 +113,6 @@ export function PostDetail({ id }: { id: string }) {
         <div><span>{draft.length.toLocaleString()}/1,000</span><button type="submit" className="review-button review-button-primary" disabled={busy || !draft.trim()}>{busy ? "등록 중…" : "댓글 등록"}</button></div>
       </form>
     </section>
+    <AdUnit kind="feed" className="post-detail-end" />
   </article>;
 }

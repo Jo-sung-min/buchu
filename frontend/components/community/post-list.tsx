@@ -1,9 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { fetchPosts, postCategories, postCategoryDescriptions, postCategoryLabels, postsChangedEvent, type PostCategory, type PostPage, type PostSort } from "@/lib/posts";
 import { Icon } from "../icons";
 import { PostRow } from "./post-row";
+import { AdUnit } from "../adsense/ad-unit";
+
+/** Rows between in-feed ads. 20 rows per page → an ad after the 7th and 14th post, never right before the pagination. */
+const rowsPerAd = 7;
 
 export function PostList({ initialQuery = "", initialCategory = "", initialSort = "latest" }: { initialQuery?: string; initialCategory?: PostCategory | ""; initialSort?: PostSort }) {
   const [query, setQuery] = useState(initialQuery);
@@ -50,7 +54,7 @@ export function PostList({ initialQuery = "", initialCategory = "", initialSort 
     <div className="post-list-count" role="status">전체 <b>{data ? data.total.toLocaleString() : "—"}</b>건{query.trim() && <> · ‘{query.trim()}’ 검색 결과</>}</div>
     {error ? <div className="home-empty"><h3>글을 불러오지 못했어요</h3><p>{error}</p><button onClick={() => setVersion(value => value + 1)}>다시 불러오기</button></div>
       : !data ? <div className="home-loading" role="status">글 불러오는 중…</div>
-      : data.items.length ? <ol className="home-rows">{data.items.map(post => <PostRow key={post.id} post={post} />)}</ol>
+      : data.items.length ? <ol className="home-rows">{data.items.map((post, index) => <Fragment key={post.id}><PostRow post={post} />{(index + 1) % rowsPerAd === 0 && index + 1 < data.items.length && <AdUnit kind="feed" as="li" />}</Fragment>)}</ol>
       : <div className="home-empty"><h3>{query.trim() || category ? "조건에 맞는 글이 없어요" : "아직 글이 없어요"}</h3><p>{query.trim() ? "검색어나 주제를 바꿔 보세요." : category ? `${postCategoryLabels[category]} 첫 글을 남겨 보세요.` : "첫 글을 남겨 소통을 시작해 보세요."}</p>{query.trim() ? <button onClick={() => { setQuery(""); setCategory(""); }}>전체 글 보기 <Icon name="arrow" size={15} /></button> : <Link href={`/community/write${category ? `?category=${category}` : ""}`}>글쓰기 <Icon name="arrow" size={15} /></Link>}</div>}
     {data && pages > 1 && <nav className="post-pagination" aria-label="글 페이지"><button type="button" disabled={page === 0 || loading} onClick={() => setPage(value => value - 1)}>이전</button><span><strong>{page + 1}</strong> / {pages}</span><button type="button" disabled={page + 1 >= pages || loading} onClick={() => setPage(value => value + 1)}>다음</button></nav>}
   </div>;

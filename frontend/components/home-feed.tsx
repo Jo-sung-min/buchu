@@ -1,11 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Program } from "@/lib/types";
 import { fetchReviews, fetchReviewSummary, reviewsChangedEvent, type Review, type ReviewSummary } from "@/lib/reviews";
 import { fetchHomeFeed, fetchPosts, postCategories, postCategoryDescriptions, postsChangedEvent, type HomeFeed as HomeData, type Post } from "@/lib/posts";
 import { Icon } from "./icons";
 import { PostRow } from "./community/post-row";
+import { AdUnit } from "./adsense/ad-unit";
+
+/** Topic blocks per ad strip: two grid rows (four topics) of posts, then one full-width ad — Blind inserts a banner at the same cadence. */
+const topicsPerAd = 4;
 
 type Stat = ReviewSummary["programs"][number];
 function isNew(program: Program) {
@@ -93,13 +97,17 @@ export function HomeFeed({ programs, initialQuery = "" }: { programs: Program[];
             <Section title="오늘의 주제" description="지금 가장 많이 보고 댓글 다는 글" href="/community?sort=popular">
               {rows(home.popular.slice(0, 8), "아직 글이 없어요.", "/community/write")}
             </Section>
+            <AdUnit kind="feed" />
             <Section title="최신 글" href="/community">
               {rows(home.latest.slice(0, 8), "아직 글이 없어요.", "/community/write")}
             </Section>
             <div className="home-topics">
-              {postCategories.map(([category, label]) => <Section key={category} title={label} description={postCategoryDescriptions[category]} href={`/community?category=${category}`}>
-                {rows((home.byCategory[category] || []).slice(0, 5), `${label} 첫 글을 기다리고 있어요.`, `/community/write?category=${category}`)}
-              </Section>)}
+              {postCategories.map(([category, label], index) => <Fragment key={category}>
+                <Section title={label} description={postCategoryDescriptions[category]} href={`/community?category=${category}`}>
+                  {rows((home.byCategory[category] || []).slice(0, 5), `${label} 첫 글을 기다리고 있어요.`, `/community/write?category=${category}`)}
+                </Section>
+                {(index + 1) % topicsPerAd === 0 && index + 1 < postCategories.length && <AdUnit kind="feed" className="home-topics-ad" />}
+              </Fragment>)}
             </div>
             <Section title="최근 익명 후기" description="부업 정보에 달린 솔직한 평가" href="/reviews">
               {reviews?.length ? <ol className="home-rows">{reviews.map(review => <li key={review.id} className="home-row">
@@ -124,6 +132,7 @@ export function HomeFeed({ programs, initialQuery = "" }: { programs: Program[];
             })}</ol> : <p className="home-popular-empty">아직 등록된 부업이 없어요.</p>}
             <p className="home-popular-note"><Icon name="info" size={12} />후기 수와 평균 별점을 기준으로 집계한 순위</p>
           </section>
+          <AdUnit kind="rect" />
           <nav className="home-side-topics" aria-label="주제 바로가기"><h2>주제</h2>
             <div>{postCategories.map(([category, label]) => <Link key={category} href={`/community?category=${category}`}>{label}</Link>)}</div>
           </nav>

@@ -13,6 +13,8 @@
 
 PC 화면 양옆의 광고 배너는 [data/advertisements.json](data/advertisements.json)에서 이미지와 이동 주소를 각각 설정합니다. 이미지가 없으면 광고 자리 안내를 표시하며, 모바일에서는 양옆 광고를 숨깁니다. 자세한 등록 방법은 [광고 설정 안내](docs/advertisements.md)를 참고하세요.
 
+구글 애드센스는 블라인드처럼 스크롤을 따라 피드 사이에 노출됩니다. `frontend/.env.local`에 `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-…`를 넣으면 홈의 오늘의 주제 아래, 주제 블록 두 줄마다, 사이드바 인기 부업 아래(300×250), 전체 글 목록 7줄마다, 글 상세 본문 아래와 페이지 끝에 광고가 나옵니다. 광고 단위 ID는 `NEXT_PUBLIC_ADSENSE_SLOT_FEED`·`_SIDEBAR`·`_ARTICLE`, 인피드 네이티브 단위를 쓰려면 `NEXT_PUBLIC_ADSENSE_FEED_LAYOUT_KEY`를 추가합니다([frontend/.env.example](frontend/.env.example) 참고). 게시자 ID를 비워 두면 개발 서버에서는 자리 표시만 보이고 배포에서는 아무것도 그리지 않으며, `/ads.txt`는 게시자 ID로 자동 생성됩니다. 광고는 화면 가까이 스크롤될 때만 요청하고 높이를 미리 확보해 본문이 밀리지 않습니다.
+
 ## 구성
 
 ```text
