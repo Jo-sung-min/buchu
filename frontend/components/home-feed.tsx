@@ -75,12 +75,6 @@ export function HomeFeed({ programs, initialQuery = "" }: { programs: Program[];
     : <div className="home-empty home-empty-quiet"><p>{empty} <Link href={writeHref}>첫 글 쓰기 →</Link></p></div>;
 
   return <div className="home">
-    <section className="home-banner" aria-label="부추 소개">
-      <div className="container home-banner-inner">
-        <div><strong>부업하는 사람들의 소통 공간 | 부추</strong><p>오늘의 주제부터 주식·결혼·직장 이야기까지, 익명으로 편하게 떠들어요</p></div>
-        <Link href="/community/write" className="home-banner-cta">글쓰기 <Icon name="arrow" size={15} /></Link>
-      </div>
-    </section>
     <div className="container">
       <form className="home-search" role="search" onSubmit={event => event.preventDefault()}>
         <Icon name="search" size={21} />
