@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18",
+  "updatedAt": "2026-10-20",
   "programs": [
     {
       "slug": "coupang-partners",
@@ -43,7 +43,13 @@
         "광고 표기, 활동 채널, 금지 행위에 관한 최신 운영정책을 먼저 확인하세요.",
         "가입 비용과 현재 적용되는 수수료·정산 조건은 공식 사이트에서 확인이 필요해요."
       ],
-      "verifiedAt": "2026-10-14"
+      "verifiedAt": "2026-10-14",
+      "minIncome": "월 1~5만 원",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "adpick",
@@ -88,7 +94,12 @@
         "대기 포인트와 출금 가능한 포인트는 구분돼요. 회원 유형별 지급 조건을 확인하세요.",
         "유료 부가 서비스가 있으므로 선택한 상품의 비용을 확인하세요. 일반 가입 비용은 추가 확인이 필요해요."
       ],
-      "verifiedAt": "2026-10-14"
+      "verifiedAt": "2026-10-14",
+      "minIncome": "월 1~3만 원",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ]
     },
     {
       "slug": "linkprice",
@@ -132,7 +143,12 @@
         "허용되는 채널과 성과 인정 조건은 광고주마다 다를 수 있어요.",
         "가입 비용, 수수료율과 지급 기준은 공식 안내에서 확인이 필요해요."
       ],
-      "verifiedAt": "2026-10-14"
+      "verifiedAt": "2026-10-14",
+      "minIncome": "월 1~5만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "tenping",
@@ -175,7 +191,11 @@
         "캠페인마다 보상되는 행동과 허용 채널이 달라요. 상세 안내를 읽고 시작하세요.",
         "필수 홍보 문구와 어뷰징 규제정책을 지켜야 해요. 출금 조건은 등급에 따라 달라질 수 있어요."
       ],
-      "verifiedAt": "2026-10-14"
+      "verifiedAt": "2026-10-14",
+      "minIncome": "월 1~3만 원",
+      "ageGroups": [
+        "TWENTIES"
+      ]
     },
     {
       "slug": "google-adsense",
@@ -218,7 +238,12 @@
         "직접 클릭하거나 클릭을 유도하면 계정이 정지될 수 있어요.",
         "수익률과 지급 기준 금액은 국가·시기에 따라 달라 공식 안내를 확인하세요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 1~10만 원 (승인 후)",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ]
     },
     {
       "slug": "naver-adpost",
@@ -260,7 +285,13 @@
         "광고 클릭을 유도하는 문구는 정책 위반이에요.",
         "수익은 방문자 규모에 크게 좌우돼 초기에는 소액일 수 있어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 5천 원~3만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES",
+        "FIFTIES_PLUS"
+      ]
     },
     {
       "slug": "youtube-partner",
@@ -302,7 +333,12 @@
         "저작권 침해나 재사용 콘텐츠는 수익 창출이 거부될 수 있어요.",
         "장비·편집 시간 투자가 필요하고 초기 수익은 매우 적을 수 있어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 5~30만 원 (조건 충족 후)",
+      "ageGroups": [
+        "TEENS",
+        "TWENTIES"
+      ]
     },
     {
       "slug": "shutterstock-contributor",
@@ -344,7 +380,12 @@
         "심사 기준(초점, 노이즈, 저작권)을 통과해야 해요.",
         "건당 수익이 작아 많은 양의 콘텐츠가 있어야 의미 있는 수익이 나요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 1~5만 원",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ]
     },
     {
       "slug": "naver-smartstore",
@@ -386,7 +427,12 @@
         "재고·배송·CS에 시간이 들어 생각보다 손이 많이 가요.",
         "일정 매출 이상이면 사업자 등록과 세금 신고가 필요해요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 5~30만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "coupang-marketplace",
@@ -428,7 +474,12 @@
         "카테고리별 수수료와 정산 주기가 달라 수익 계산이 필요해요.",
         "배송 지연·반품 처리 기준이 엄격해 운영 관리가 중요해요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 10~50만 원 (사업자)",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "kmong",
@@ -470,7 +521,12 @@
         "초기에는 리뷰가 없어 저가 경쟁이 생길 수 있어요.",
         "플랫폼 밖 직거래 유도는 제재 대상이에요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "건당 1~10만 원",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ]
     },
     {
       "slug": "soomgo",
@@ -512,7 +568,12 @@
         "오프라인 서비스는 이동·일정 관리가 필요해요.",
         "일부 분야는 자격증이나 보험이 필요할 수 있어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "건당 3~20만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "baemin-connect",
@@ -554,7 +615,11 @@
         "날씨·시간대에 따라 배달 요청과 수익이 크게 달라져요.",
         "안전사고 위험이 있어 보험과 안전 수칙을 꼭 확인하세요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "시간당 1~2만 원",
+      "ageGroups": [
+        "TWENTIES"
+      ]
     },
     {
       "slug": "aliexpress-affiliate",
@@ -599,7 +664,11 @@
         "배송 기간·관부가세 등 직구 특성을 함께 안내해야 신뢰를 얻어요.",
         "광고 표시 의무를 지키세요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 1~5만 원",
+      "ageGroups": [
+        "TWENTIES"
+      ]
     },
     {
       "slug": "revu",
@@ -643,7 +712,12 @@
         "리뷰에는 협찬 표시(광고 표기)를 반드시 해야 해요.",
         "선정 후 미이행 시 이용 제한이 있을 수 있어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "제품 제공 + 건당 0~5만 원",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ]
     },
     {
       "slug": "panelnow",
@@ -685,7 +759,13 @@
         "프로필 조건에 맞지 않으면 설문 도중 종료될 수 있어요.",
         "개인정보 제공 범위를 가입 시 확인하세요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 5천 원~2만 원",
+      "ageGroups": [
+        "TEENS",
+        "TWENTIES",
+        "FIFTIES_PLUS"
+      ]
     },
     {
       "slug": "dinnerqueen",
@@ -728,7 +808,11 @@
         "리뷰에는 협찬 표시(광고 표기)를 반드시 넣어야 해요.",
         "방문 일정과 리뷰 기한을 못 지키면 페널티가 있어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "식사 제공 (현금 수익 거의 없음)",
+      "ageGroups": [
+        "TWENTIES"
+      ]
     },
     {
       "slug": "reviewplace",
@@ -772,7 +856,12 @@
         "협찬 표시를 빠뜨리면 표시광고법 위반이 될 수 있어요.",
         "리뷰 기한 미이행 시 이용 제한이 있을 수 있어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "제품 제공 + 건당 0~3만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "crowdworks",
@@ -814,7 +903,12 @@
         "단가가 낮은 작업이 많아 시급으로 환산하면 높지 않을 수 있어요.",
         "프로젝트 물량이 시기에 따라 들쭉날쭉해요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 3~15만 원",
+      "ageGroups": [
+        "FORTIES",
+        "FIFTIES_PLUS"
+      ]
     },
     {
       "slug": "flitto",
@@ -856,7 +950,11 @@
         "건당 포인트가 작아 많은 양을 해야 의미 있는 금액이 돼요.",
         "출금 조건과 수수료를 확인하세요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 1~5만 원",
+      "ageGroups": [
+        "TWENTIES"
+      ]
     },
     {
       "slug": "idus",
@@ -898,7 +996,12 @@
         "식품·화장품 등은 관련 신고·인증이 필요해요.",
         "제작 시간 대비 단가를 잘 계산해야 해요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "월 5~30만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ]
     },
     {
       "slug": "handwork-home",
@@ -940,7 +1043,12 @@
         "단가가 매우 낮아 시급으로 환산하면 최저임금에 못 미치는 경우가 많아요.",
         "불량 판정을 이유로 보수를 깎는 업체가 있어 기준을 미리 확인하세요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "건당 수백 원~ (선입금 주의)",
+      "ageGroups": [
+        "FORTIES",
+        "FIFTIES_PLUS"
+      ]
     },
     {
       "slug": "naver-expert",
@@ -982,7 +1090,12 @@
         "초기에는 리뷰가 없어 예약이 적을 수 있어요.",
         "상담 품질 관리와 응답 속도가 중요해요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "건당 1~5만 원",
+      "ageGroups": [
+        "FORTIES",
+        "FIFTIES_PLUS"
+      ]
     },
     {
       "slug": "taling",
@@ -1025,7 +1138,207 @@
         "수수료를 감안해 가격을 정하세요.",
         "수업 준비 시간이 생각보다 많이 들어요."
       ],
-      "verifiedAt": "2026-10-18"
+      "verifiedAt": "2026-10-18",
+      "minIncome": "회당 2~10만 원",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ]
+    },
+    {
+      "slug": "oliveyoung-curator",
+      "name": "올리브영 쇼핑 큐레이터",
+      "tagline": "올리브영 회원이면 누구나, 화장품 추천이 수익으로",
+      "description": "올리브영에서 발급한 전용 상품 링크를 SNS·블로그에 올리고, 링크를 거쳐 구매가 생기면 구매 금액의 일부를 콘텐츠 수익금으로 받는 어필리에이트예요. 별도 심사 없이 올리브영 회원이면 바로 시작할 수 있고, 올영세일 시즌에 추천 글을 올리면 전환이 잘 붙어요.",
+      "category": "affiliate",
+      "channels": [
+        "sns",
+        "blog",
+        "video"
+      ],
+      "cost": "free",
+      "costLabel": "무료 (올리브영 회원)",
+      "commission": "구매 금액의 최대 7% (링크 거쳐 다른 상품 구매 시 3%)",
+      "settlement": "전일 수익은 다음 날 오전 9시 대시보드에 반영돼요. 누적 수익금 5천 원부터 매월 21일~말일에 지급 신청할 수 있고, 최대 45일 안에 지급돼요.",
+      "difficulty": "beginner",
+      "minIncome": "월 1~5만 원",
+      "ageGroups": [
+        "TEENS",
+        "TWENTIES"
+      ],
+      "featured": true,
+      "officialUrl": "https://m.oliveyoung.co.kr/m/mtn/affiliate/apply",
+      "guideUrl": "https://m.oliveyoung.co.kr/m/mtn/affiliate/guide",
+      "brandColor": "#9BCE26",
+      "initials": "올",
+      "tags": [
+        "뷰티",
+        "누구나 참여",
+        "최대 7%"
+      ],
+      "highlights": [
+        "회원이면 심사 없이 바로 참여",
+        "상품 링크·셔터 게시물 상품 태그로 수익 발생",
+        "5천 원부터 출금, 수익금은 올리브영이 전액 부담"
+      ],
+      "steps": [
+        "올리브영 앱·모바일 웹에서 쇼핑 큐레이터에 참여 신청해요.",
+        "'상품 링크 생성' 버튼으로 소개할 상품의 전용 링크를 만들어요.",
+        "게시물 상단에 경제적 이해관계(광고·수수료) 표기를 넣고 링크와 함께 올려요.",
+        "대시보드에서 수익을 확인하고 5천 원이 넘으면 매월 21일~말일에 지급을 신청해요."
+      ],
+      "cautions": [
+        "직접 복사한 상품 주소는 실적으로 인정되지 않아요. 반드시 '상품 링크 생성'으로 발급한 링크만 유효해요.",
+        "게시물에 경제적 이해관계 표기를 빠뜨리면 수익금 지급이 반려되고 활동 제재를 받을 수 있어요.",
+        "7%·3% 수수료율은 출시 보도 기준이에요. 현재 적용 요율은 큐레이터 대시보드와 공식 가이드에서 확인하세요."
+      ],
+      "verifiedAt": "2026-10-20"
+    },
+    {
+      "slug": "musinsa-curator",
+      "name": "무신사 큐레이터",
+      "tagline": "패션 추천 콘텐츠로 최대 10% 판매 수수료",
+      "description": "사전 승인을 받은 큐레이터가 SNS에서 무신사 상품을 소개하고, 큐레이션 샵 링크나 개별 상품 링크로 판매가 생기면 판매 수수료를 받는 패션 어필리에이트예요. 무신사가 수수료 일부를 대신 부담해 최대 10%까지 지원하고, 정산 대상자에게는 매월 20% 할인 쿠폰도 줘요.",
+      "category": "affiliate",
+      "channels": [
+        "sns",
+        "video",
+        "blog"
+      ],
+      "cost": "check",
+      "costLabel": "무료 (가입 승인 심사)",
+      "commission": "판매 수수료 최대 10% 지원 (브랜드별 상이)",
+      "settlement": "큐레이션 샵·상품 링크로 발생한 판매를 기준으로 정산해요. 정산 주기와 승인 기준은 큐레이터 가입 신청 페이지의 FAQ와 승인 안내에서 확인이 필요해요.",
+      "difficulty": "intermediate",
+      "minIncome": "월 3~10만 원",
+      "ageGroups": [
+        "TWENTIES"
+      ],
+      "featured": false,
+      "officialUrl": "https://www.musinsa.com/curator/intro/pro",
+      "guideUrl": "https://www.musinsa.com/curator/intro/pro",
+      "brandColor": "#000000",
+      "initials": "무",
+      "tags": [
+        "패션",
+        "최대 10%",
+        "승인제"
+      ],
+      "highlights": [
+        "브랜드별 최대 10% 판매 수수료, 무신사가 일부 부담",
+        "큐레이션 샵 링크 하나로 추천 상품 묶어 공유",
+        "기획전 사전 공유, 브랜드 협업·숏폼 촬영 기회"
+      ],
+      "steps": [
+        "무신사 큐레이터 소개 페이지에서 가입을 신청하고 승인을 기다려요.",
+        "승인 후 큐레이션 샵을 꾸미고 추천 상품을 담아요.",
+        "코디·하울 콘텐츠에 큐레이션 샵 링크나 상품 링크를 넣어 SNS에 올려요.",
+        "큐레이터 센터에서 판매 실적과 수수료를 확인해요."
+      ],
+      "cautions": [
+        "누구나 바로 활동할 수 있는 건 아니에요. 가입 승인 기준과 재신청 가능 여부는 공식 FAQ에서 확인하세요.",
+        "수수료율은 브랜드와 상품에 따라 달라요. '최대 10%'는 상한이지 평균이 아니에요.",
+        "협찬·수수료가 걸린 게시물에는 광고 표기를 넣어야 해요."
+      ],
+      "verifiedAt": "2026-10-20"
+    },
+    {
+      "slug": "3hoursahead-creator",
+      "name": "세시간전 크리에이터",
+      "tagline": "호텔·항공·렌터카, 고단가 예약 하나가 수익이 돼요",
+      "description": "여행 콘텐츠와 커머스를 잇는 어필리에이트 네트워크예요. 제휴사 상품 페이지 주소를 세시간전 스튜디오에 붙여 넣어 제휴 링크를 만들고, 그 링크로 예약이 생기면 커미션을 받아요. 호텔·항공권·렌터카처럼 단가가 큰 상품이 많아 건당 수익이 쇼핑 제휴보다 커요.",
+      "category": "affiliate",
+      "channels": [
+        "blog",
+        "sns",
+        "video"
+      ],
+      "cost": "free",
+      "costLabel": "무료 가입",
+      "commission": "예약 건당 최대 10% 커미션 + 브랜드 캠페인·협찬",
+      "settlement": "크리에이터 스튜디오의 성과 관리에서 제휴 링크별 판매·커미션을 확인해요. 환율에 따라 예약 시점과 실제 정산액이 달라질 수 있고, 지급 주기와 최소 금액은 공식 도움말에서 확인이 필요해요.",
+      "difficulty": "intermediate",
+      "minIncome": "월 3~20만 원",
+      "ageGroups": [
+        "THIRTIES",
+        "FORTIES"
+      ],
+      "featured": false,
+      "officialUrl": "https://3hoursahead.com/ko",
+      "guideUrl": "https://help.3hoursahead.com/ko",
+      "brandColor": "#1E63F3",
+      "initials": "세",
+      "tags": [
+        "여행",
+        "고단가",
+        "최대 10%"
+      ],
+      "highlights": [
+        "호텔·항공·렌터카 등 고단가 예약 커미션",
+        "제휴사 링크 붙여 넣기만으로 제휴 링크 생성",
+        "웨비나·아카데미, 전용 쿠폰과 프로모션 지원"
+      ],
+      "steps": [
+        "세시간전에 가입하고 크리에이터 스튜디오에 들어가요.",
+        "제휴사 상품 페이지 주소를 복사해 스튜디오에 붙여 넣고 제휴 링크를 만들어요.",
+        "여행 후기·일정 콘텐츠에 링크를 넣어 블로그나 SNS에 올려요.",
+        "성과 관리 > 제휴링크에서 예약과 커미션을 확인해요."
+      ],
+      "cautions": [
+        "표시되는 예상 판매 금액과 커미션은 검색 조건과 환율에 따라 달라져요.",
+        "상품별 수수료율, 지급 주기, 최소 지급액은 공식 도움말에서 확인하세요.",
+        "여행 콘텐츠가 꾸준히 있어야 전환이 붙어요. 글 한두 개로는 수익이 거의 없어요."
+      ],
+      "verifiedAt": "2026-10-20"
+    },
+    {
+      "slug": "nordvpn-affiliate",
+      "name": "NordVPN 어필리에이트",
+      "tagline": "해외 구독 제휴, 신규 가입 1년 플랜 40%",
+      "description": "VPN 서비스 NordVPN의 글로벌 어필리에이트예요. 추천 링크로 신규 가입이 생기면 플랜에 따라 1개월 플랜 100%, 1년 플랜 40%의 수수료를 받고, 갱신 결제에도 30%가 계속 붙어요. 국내 쇼핑 제휴보다 요율이 훨씬 높지만 영어 가입과 달러 정산이 필요해요.",
+      "category": "affiliate",
+      "channels": [
+        "blog",
+        "video",
+        "website"
+      ],
+      "cost": "free",
+      "costLabel": "무료 가입 (영어)",
+      "commission": "신규 가입 1년 플랜 40%, 1개월 플랜 100%, 갱신 30%",
+      "settlement": "플랜별 신규 가입 수수료와 갱신 수수료를 달러로 정산해요. 지급 수단과 최소 지급액, 쿠키 기간은 공식 어필리에이트 페이지와 가입 후 약관에서 확인이 필요해요.",
+      "difficulty": "intermediate",
+      "minIncome": "월 5~30만 원 (달러 정산)",
+      "ageGroups": [
+        "TWENTIES",
+        "THIRTIES"
+      ],
+      "featured": false,
+      "officialUrl": "https://nordvpn.com/affiliate/",
+      "guideUrl": "https://nordvpn.com/affiliate/",
+      "brandColor": "#4687FF",
+      "initials": "N",
+      "tags": [
+        "해외 제휴",
+        "구독 수수료",
+        "최대 100%"
+      ],
+      "highlights": [
+        "신규 가입 1년 플랜 40%, 1개월 플랜 100%",
+        "갱신 결제에도 30% 수수료 지속",
+        "IT·보안·해외 콘텐츠 블로그와 궁합이 좋아요"
+      ],
+      "steps": [
+        "공식 어필리에이트 페이지에서 영어로 가입을 신청해요.",
+        "승인 후 추천 링크와 배너를 발급받아요.",
+        "VPN 비교·해외 콘텐츠 시청 가이드 등에 광고 표기와 함께 링크를 넣어요.",
+        "대시보드에서 가입 실적과 달러 수수료를 확인해요."
+      ],
+      "cautions": [
+        "영어 가입 심사와 달러 정산이 필요해요. 환전 수수료와 세금 신고를 함께 생각하세요.",
+        "수수료율은 공식 페이지 기준이며 플랜과 지역에 따라 달라질 수 있어요. 가입 전 최신 표를 확인하세요.",
+        "한국어 검색 유입만으로는 전환이 적어요. 해외 서비스 이용 가이드처럼 VPN 수요가 있는 글이 필요해요."
+      ],
+      "verifiedAt": "2026-10-20"
     }
   ]
 }

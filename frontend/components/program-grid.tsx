@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
-import { type Program, channelLabels, difficultyLabels, programCategoryLabel } from "@/lib/types";
+import { type AgeGroup, type Program, ageGroupLabels, channelLabels, difficultyLabels, programCategoryLabel } from "@/lib/types";
 import { BrandAvatar, SaveButton } from "./program-card";
 import { Icon } from "./icons";
 
 type Stat = { reviewCount: number; averageRating: number | null };
 
 /** Side-job catalogue as cards: what it is, how you earn, what it costs, how hard it is — at a glance. */
-export function ProgramGrid({ items, stats, loaded, statsError }: { items: Program[]; stats: Map<string, Stat>; loaded: boolean; statsError: boolean }) {
+export function ProgramGrid({ items, stats, loaded, statsError, mine = null }: { items: Program[]; stats: Map<string, Stat>; loaded: boolean; statsError: boolean; mine?: AgeGroup | null }) {
   return <div className="program-cards">
     {items.map(program => {
       const stat = stats.get(program.slug);
@@ -22,10 +22,12 @@ export function ProgramGrid({ items, stats, loaded, statsError }: { items: Progr
         <p className="program-tile-tagline">{program.tagline}</p>
         <p className="program-tile-description">{program.description}</p>
         <dl className="program-tile-facts">
+          <div className="program-tile-income"><dt>최소 예상 수익</dt><dd>{program.minIncome || "공식 안내 확인"}</dd></div>
           <div><dt>수익 방식</dt><dd>{program.commission}</dd></div>
           <div><dt>시작 비용</dt><dd className={program.cost === "free" ? "is-free" : ""}>{program.costLabel}</dd></div>
           <div><dt>활동 채널</dt><dd>{program.channels.map(channel => channelLabels[channel]).join(" · ")}</dd></div>
         </dl>
+        {program.ageGroups?.length ? <div className="program-tile-ages" aria-label="추천 나이대">{program.ageGroups.map(group => <span key={group} className={group === mine ? "is-mine" : ""}>{ageGroupLabels[group]}{group === mine ? " 추천" : ""}</span>)}</div> : null}
         <div className="program-tile-bottom">
           <Link href={`${href}#reviews`} className="program-tile-rating"><span className={stat?.reviewCount ? "rating-star" : "rating-star empty"}>★</span>{statsError ? "후기 확인" : stat?.reviewCount && stat.averageRating != null ? <><b>{stat.averageRating.toFixed(1)}</b> 후기 {stat.reviewCount}</> : loaded ? "첫 후기를 기다려요" : "후기 불러오는 중"}</Link>
           <Link href={`${href}#how-to`} className="program-tile-cta">시작 방법 보기 <Icon name="arrow" size={14} /></Link>

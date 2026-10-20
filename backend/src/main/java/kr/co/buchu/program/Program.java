@@ -31,12 +31,16 @@ public record Program(
         String board,
         String helpType,
         String location,
-        String deadline
+        String deadline,
+        String minIncome,
+        List<String> ageGroups
 ) {
     public Program {
         board = board == null || board.isBlank() ? "MARKETER" : board;
         helpType = "HELP".equals(board) ? (helpType == null || helpType.isBlank() ? "PROMOTION" : helpType) : null;
         location = location == null ? "" : location;
         deadline = deadline == null ? "" : deadline;
+        minIncome = minIncome == null ? "" : minIncome;
+        ageGroups = ageGroups == null ? List.of() : List.copyOf(ageGroups);
     }
 }
