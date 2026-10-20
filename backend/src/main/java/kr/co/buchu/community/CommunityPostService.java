@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import kr.co.buchu.member.MemberService;
 import kr.co.buchu.security.ClientAddress;
 import kr.co.buchu.submission.SubmissionAccessService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +41,15 @@ public class CommunityPostService {
     private final RowMapper<Comment> commentMapper = (rs, index) -> new Comment(rs.getString("id"), rs.getString("post_id"), rs.getString("content"),
             rs.getString("nickname"), rs.getTimestamp("created_at").toInstant().toString(), rs.getString("author_id"), rs.getString("author_type"), rs.getString("ip_hint"), false);
 
-    public CommunityPostService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
+    /** The front page is read far more than it changes and the database may sit in another region, so one copy is kept for a few seconds. */
+    private final long homeCacheMillis;
+    private volatile HomeFeed cachedHome;
+    private volatile long cachedHomeAt;
+
+    public CommunityPostService(JdbcTemplate jdbc, @Value("${buchu.community.home-cache-seconds:15}") long homeCacheSeconds) {
+        this.jdbc = jdbc;
+        this.homeCacheMillis = homeCacheSeconds * 1000;
+    }
 
     @Transactional
     public CreatedPost create(PostInput input, Author author) {
@@ -52,6 +62,7 @@ public class CommunityPostService {
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
         jdbc.update("INSERT INTO community_posts (id, category, title, content, nickname, delete_token_hash, view_count, comment_count, created_at, author_id, author_type, ip_hint) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
                 id, input.category(), title, content, author.nickname(), SubmissionAccessService.hash(token == null ? UUID.randomUUID().toString() : token), now, author.id(), author.type(), author.ipHint());
+        forgetHome();
         return new CreatedPost(new Post(id, input.category(), title, content, author.nickname(), 0, 0, now.toInstant().toString(), author.id(), author.type(), author.ipHint(), author.member()), token);
     }
 
@@ -83,18 +94,40 @@ public class CommunityPostService {
         return new PostPage(items, total, page, size);
     }
 
-    /** Everything the front page shows in one round trip: today's hot posts, the newest, and the newest per topic. */
+    /** Everything the front page shows: today's hot posts, the newest, and the newest per topic. Served from a short-lived copy when one is fresh. */
     @Transactional(readOnly = true)
     public HomeFeed home() {
-        List<Post> popular = jdbc.query("SELECT " + POST_COLUMNS + " FROM community_posts ORDER BY (comment_count * 3 + view_count) DESC, created_at DESC, seq DESC LIMIT 10", postMapper);
-        List<Post> latest = jdbc.query("SELECT " + POST_COLUMNS + " FROM community_posts ORDER BY created_at DESC, seq DESC LIMIT 10", postMapper);
+        HomeFeed cached = cachedHome;
+        if (cached != null && homeCacheMillis > 0 && System.currentTimeMillis() - cachedHomeAt < homeCacheMillis) return cached;
+        HomeFeed feed = loadHome();
+        cachedHome = feed;
+        cachedHomeAt = System.currentTimeMillis();
+        return feed;
+    }
+
+    /** One statement ranks all three blocks and counts the posts: every extra statement is another network round trip to the database. */
+    private HomeFeed loadHome() {
+        List<Post> popular = new ArrayList<>(), latest = new ArrayList<>();
         Map<String, List<Post>> byCategory = new LinkedHashMap<>();
         for (String category : CATEGORY_ORDER) byCategory.put(category, new ArrayList<>());
-        jdbc.query("SELECT " + POST_COLUMNS + " FROM (SELECT " + POST_COLUMNS + ", seq, ROW_NUMBER() OVER (PARTITION BY category ORDER BY created_at DESC, seq DESC) AS rn FROM community_posts) ranked WHERE rn <= 5 ORDER BY category, created_at DESC, seq DESC", postMapper)
-                .forEach(post -> byCategory.computeIfAbsent(post.category(), ignored -> new ArrayList<>()).add(post));
-        long total = jdbc.queryForObject("SELECT COUNT(*) FROM community_posts", Long.class);
-        return new HomeFeed(popular, latest, byCategory, total);
+        long[] total = {0};
+        String ranked = "SELECT 'popular' AS bucket, ROW_NUMBER() OVER (ORDER BY (comment_count * 3 + view_count) DESC, created_at DESC, seq DESC) AS rn, " + POST_COLUMNS + " FROM community_posts"
+                + " UNION ALL SELECT 'latest', ROW_NUMBER() OVER (ORDER BY created_at DESC, seq DESC), " + POST_COLUMNS + " FROM community_posts"
+                + " UNION ALL SELECT 'topic', ROW_NUMBER() OVER (PARTITION BY category ORDER BY created_at DESC, seq DESC), " + POST_COLUMNS + " FROM community_posts";
+        jdbc.query("SELECT bucket, rn, " + POST_COLUMNS + ", (SELECT COUNT(*) FROM community_posts) AS total FROM (" + ranked + ") ranked"
+                + " WHERE rn <= CASE bucket WHEN 'topic' THEN 5 ELSE 10 END ORDER BY bucket, rn", (RowCallbackHandler) rs -> {
+            total[0] = rs.getLong("total");
+            Post post = postMapper.mapRow(rs, 0);
+            switch (rs.getString("bucket")) {
+                case "popular" -> popular.add(post);
+                case "latest" -> latest.add(post);
+                default -> byCategory.computeIfAbsent(post.category(), ignored -> new ArrayList<>()).add(post);
+            }
+        });
+        return new HomeFeed(popular, latest, byCategory, total[0]);
     }
+
+    private void forgetHome() { cachedHome = null; }
 
     @Transactional
     public Post read(String id) {
@@ -106,11 +139,13 @@ public class CommunityPostService {
     public void deleteOwned(String id, String token, String viewerId) {
         if (!ownedByMember("community_posts", id, viewerId)) requireToken("community_posts", id, token);
         jdbc.update("DELETE FROM community_posts WHERE id = ?", id);
+        forgetHome();
     }
 
     @Transactional
     public void deleteAdmin(String id) {
         if (jdbc.update("DELETE FROM community_posts WHERE id = ?", id) == 0) throw notFound();
+        forgetHome();
     }
 
     @Transactional
@@ -123,6 +158,7 @@ public class CommunityPostService {
         jdbc.update("INSERT INTO community_comments (id, post_id, content, nickname, delete_token_hash, created_at, author_id, author_type, ip_hint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 id, postId, content, author.nickname(), SubmissionAccessService.hash(token == null ? UUID.randomUUID().toString() : token), now, author.id(), author.type(), author.ipHint());
         jdbc.update("UPDATE community_posts SET comment_count = comment_count + 1 WHERE id = ?", postId);
+        forgetHome();
         return new CreatedComment(new Comment(id, postId, content, author.nickname(), now.toInstant().toString(), author.id(), author.type(), author.ipHint(), author.member()), token);
     }
 
@@ -154,6 +190,7 @@ public class CommunityPostService {
         if (posts.isEmpty()) throw notFound();
         jdbc.update("DELETE FROM community_comments WHERE id = ?", id);
         jdbc.update("UPDATE community_posts SET comment_count = GREATEST(comment_count - 1, 0) WHERE id = ?", posts.getFirst());
+        forgetHome();
     }
 
     private void requireToken(String table, String id, String token) {

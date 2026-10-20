@@ -31,9 +31,9 @@ function Section({ title, description, href, children }: { title: string; descri
 }
 
 /** Community front page: today's topics, the newest posts, then one block per topic — with a live side-job ranking rail. */
-export function HomeFeed({ programs, initialQuery = "" }: { programs: Program[]; initialQuery?: string }) {
+export function HomeFeed({ programs, initialQuery = "", initialHome = null }: { programs: Program[]; initialQuery?: string; initialHome?: HomeData | null }) {
   const [query, setQuery] = useState(initialQuery);
-  const [home, setHome] = useState<HomeData | null>(null);
+  const [home, setHome] = useState<HomeData | null>(initialHome);
   const [homeError, setHomeError] = useState("");
   const [results, setResults] = useState<Post[] | null>(null);
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
@@ -50,7 +50,8 @@ export function HomeFeed({ programs, initialQuery = "" }: { programs: Program[];
   useEffect(() => {
     const controller = new AbortController();
     setHomeError("");
-    fetchHomeFeed(controller.signal).then(setHome).catch(cause => { if (!controller.signal.aborted) setHomeError(cause instanceof Error ? cause.message : "글을 불러오지 못했어요."); });
+    // The server already delivered the first copy; only refetch after a change or when that copy was missing.
+    if (revision > 0 || !initialHome) fetchHomeFeed(controller.signal).then(setHome).catch(cause => { if (!controller.signal.aborted) setHomeError(cause instanceof Error ? cause.message : "글을 불러오지 못했어요."); });
     setReviewsFailed(false);
     Promise.all([fetchReviewSummary(controller.signal), fetchReviews({ size: 5, signal: controller.signal })])
       .then(([nextSummary, page]) => { setSummary(nextSummary); setReviews(page.items); })

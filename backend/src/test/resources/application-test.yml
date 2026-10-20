@@ -8,3 +8,6 @@ buchu:
   admin:
     username: test-admin
     password: test-password-only
+  community:
+    # Tests roll back after each case; a cached front page would outlive its data.
+    home-cache-seconds: 0
