@@ -62,6 +62,13 @@ public class MemberAuthController {
         return current(authentication, members).map(SessionResponse::of).orElse(new SessionResponse(false, null));
     }
 
+    /** Profile fields a member can change later: today just the age group that steers side-job recommendations. */
+    @PatchMapping("/profile")
+    public SessionResponse updateProfile(@RequestBody ProfileInput input, Authentication authentication) {
+        MemberService.Member member = current(authentication, members).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요해요."));
+        return SessionResponse.of(members.updateAgeGroup(member.id(), input == null ? null : input.ageGroup()));
+    }
+
     @PostMapping("/logout")
     public SessionResponse logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         csrf.saveToken(null, request, response);
@@ -81,6 +88,7 @@ public class MemberAuthController {
     }
 
     public record LoginInput(String username, String password) {}
+    public record ProfileInput(String ageGroup) {}
     public record SessionResponse(boolean authenticated, MemberService.Member member) {
         static SessionResponse of(MemberService.Member member) { return new SessionResponse(true, member); }
     }

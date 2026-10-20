@@ -100,6 +100,22 @@ class MemberApiTest {
         mvc.perform(delete("/api/posts/{id}", anonId).with(csrf()).header("X-Post-Token", anonPost.path("deleteToken").asText())).andExpect(status().isNoContent());
     }
 
+    @Test void ageGroupIsOptionalAtSignupAndEditableLater() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        mvc.perform(post("/api/auth/register").with(csrf()).session(session).with(request -> { request.setRemoteAddr(UUID.randomUUID().toString()); return request; })
+                .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(account("age_tester", "나이대러").put("ageGroup", "thirties"))))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.member.ageGroup").value("THIRTIES"));
+        mvc.perform(get("/api/auth/me").session(session)).andExpect(jsonPath("$.member.ageGroup").value("THIRTIES"));
+        mvc.perform(patch("/api/auth/profile").with(csrf()).session(session).contentType(MediaType.APPLICATION_JSON).content("{\"ageGroup\":\"FORTIES\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.member.ageGroup").value("FORTIES"));
+        mvc.perform(patch("/api/auth/profile").with(csrf()).session(session).contentType(MediaType.APPLICATION_JSON).content("{\"ageGroup\":null}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.member.ageGroup").value((Object) null));
+        mvc.perform(patch("/api/auth/profile").with(csrf()).session(session).contentType(MediaType.APPLICATION_JSON).content("{\"ageGroup\":\"NINETIES\"}")).andExpect(status().isBadRequest());
+        mvc.perform(patch("/api/auth/profile").with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{\"ageGroup\":\"FORTIES\"}")).andExpect(status().isUnauthorized());
+        MockHttpSession plain = register("no_age", "무나이");
+        mvc.perform(get("/api/auth/me").session(plain)).andExpect(jsonPath("$.member.ageGroup").value((Object) null));
+    }
+
     private MockHttpSession register(String username, String nickname) throws Exception {
         MockHttpSession session = new MockHttpSession();
         mvc.perform(post("/api/auth/register").with(csrf()).session(session).with(request -> { request.setRemoteAddr(UUID.randomUUID().toString()); return request; })

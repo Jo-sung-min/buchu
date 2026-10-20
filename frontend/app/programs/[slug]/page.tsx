@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/programs";
-import { channelLabels, difficultyLabels, programCategoryLabel } from "@/lib/types";
+import { ageGroupLabels, channelLabels, difficultyLabels, programCategoryLabel } from "@/lib/types";
 import { BrandAvatar, SaveButton } from "@/components/program-card";
 import { DetailContent, safeContentUrl } from "@/components/detail-content";
 import { ProgramReviews } from "@/components/reviews/program-reviews";
@@ -27,7 +27,7 @@ export default async function ProgramPage({ params }: Props) {
         {program.companyName && <span className="company-label">{program.companyName}</span>}
         <h1>{program.name}</h1><p>{program.tagline}</p>
       </div></div>
-      {!help && <dl className="detail-glance"><div><dt>난이도</dt><dd>{difficultyLabels[program.difficulty]}</dd></div><div><dt>시작 비용</dt><dd className={program.cost === "free" ? "is-free" : ""}>{program.costLabel}</dd></div><div><dt>수익 방식</dt><dd>{program.commission}</dd></div><div><dt>활동 채널</dt><dd>{program.channels.map(channel => channelLabels[channel]).join(" · ")}</dd></div></dl>}
+      {!help && <dl className="detail-glance"><div><dt>난이도</dt><dd>{difficultyLabels[program.difficulty]}</dd></div><div><dt>최소 예상 수익</dt><dd className="detail-income">{program.minIncome || "공식 안내 확인"}</dd></div><div><dt>추천 나이대</dt><dd>{program.ageGroups?.length ? program.ageGroups.map(group => ageGroupLabels[group]).join(" · ") : "누구나"}</dd></div><div><dt>시작 비용</dt><dd className={program.cost === "free" ? "is-free" : ""}>{program.costLabel}</dd></div><div><dt>수익 방식</dt><dd>{program.commission}</dd></div><div><dt>활동 채널</dt><dd>{program.channels.map(channel => channelLabels[channel]).join(" · ")}</dd></div></dl>}
       {help ? <div className="help-detail-facts"><span>{expired ? "모집 마감" : "모집 중"}</span><span>{program.location || "활동 지역 협의"}</span><span>{program.deadline ? `${program.deadline.replaceAll("-", ".")} 마감` : "상시 모집"}</span></div> : <div className="detail-tags">{program.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
       {!help && <nav className="detail-tabs" aria-label="부업 상세 보기"><a href="#program-info">부업 소개</a><a href="#how-to">시작 방법</a><a href="#reviews">익명 평가</a></nav>}
       <div id="program-info">{cover && <img className="submitted-cover" src={cover} alt={`${program.name} 대표 이미지`} />}

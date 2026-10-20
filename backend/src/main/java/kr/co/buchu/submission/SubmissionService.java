@@ -158,7 +158,7 @@ public class SubmissionService {
                     : List.of("수익은 보장되지 않으며, 참여 조건과 정산 기준은 공식 사이트에서 확인해 주세요."),
                 row.reviewedAt == null ? null : row.reviewedAt.substring(0, 10), input.companyName(),
                 uploads.publicUrl(input.thumbnailUploadId()), contentPolicy.withImageUrls(input.content(), uploads::publicUrl),
-                input.board(), input.helpType(), input.location(), input.deadline());
+                input.board(), input.helpType(), input.location(), input.deadline(), null, List.of());
     }
 
     private ObjectNode privateView(Row row, boolean includeReviews) {

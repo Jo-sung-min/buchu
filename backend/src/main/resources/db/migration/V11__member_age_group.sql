@@ -1,0 +1,1 @@
+ALTER TABLE members ADD COLUMN age_group VARCHAR(12);
