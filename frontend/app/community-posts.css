@@ -26,7 +26,7 @@
 .post-detail{min-width:0}
 .post-detail-head{padding-bottom:20px;border-bottom:1px solid var(--line)}
 .post-detail-category{display:inline-block;font-size:12px;font-weight:700;color:var(--text-secondary);background:var(--surface-soft);padding:4px 9px;border-radius:4px}
-.post-detail-head h1{font-size:25px;font-weight:750;line-height:1.45;letter-spacing:-.04em;margin-top:12px;overflow-wrap:anywhere}
+.post-detail-head h1{font-size:25px;font-weight:750;line-height:1.45;letter-spacing:-.04em;margin-top:12px;word-break:keep-all;overflow-wrap:anywhere}
 .post-detail-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
 .post-detail-meta>span{display:inline-flex;align-items:center;gap:4px}
 .post-author.is-member{color:var(--text-secondary);font-weight:600}
@@ -35,7 +35,7 @@
 .auth-page.container{width:min(480px,calc(100% - 48px))}
 .auth-form .review-form-actions>span a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;margin-left:4px}
 .review-writing-note a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
-.post-detail-body{padding:26px 0 30px;font-size:15px;line-height:1.9;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere}
+.post-detail-body{padding:26px 0 30px;font-size:15px;line-height:1.9;color:var(--ink);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
 .post-detail-actions{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .post-delete-trigger{font-size:12px;color:var(--muted);padding:8px 0}
 .post-delete-trigger:hover{color:var(--danger)}
@@ -48,7 +48,7 @@
 .post-comment+.post-comment{border-top:1px solid var(--line)}
 .post-comment-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .post-comment-meta strong{color:var(--text-secondary);font-weight:600}
-.post-comment p{margin-top:8px;font-size:14px;line-height:1.8;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere}
+.post-comment p{margin-top:8px;font-size:14px;line-height:1.8;color:var(--ink);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
 .post-comment-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px}
 .post-comment-actions .post-delete-trigger{padding:4px 0;font-size:11px}
 .post-comments-empty{padding:26px 0;font-size:13px;color:var(--muted)}
